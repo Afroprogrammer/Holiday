@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="origin-trial" content="A/EGsaF5VQpYrqCKqGK/hmx58RM2+fehsytnWwJtx1vD2ufFmrIDekmA3jiG7zkpA0onc1s3GmAX5dcyCmPmew0AAABieyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjU1MDAiLCJmZWF0dXJlIjoiQUlXcml0ZXJBUEkiLCJleHBpcnkiOjE3Njk0NzIwMDAsImlzVGhpcmRQYXJ0eSI6dHJ1ZX0=">
+    <title>On-Device AI Test</title>
+</head>
+<body>
+    <h1>On-Device AI Test</h1>
+    <button id="testBtn">Test Writer API</button>
+    <div id="output"></div>
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const outputDiv = document.getElementById('output');
+            try {
+                if (!('ai' in navigator)) {
+                    outputDiv.innerText = 'navigator.ai is not defined.';
+                    return;
+                }
+                if (!('writer' in navigator.ai)) {
+                    outputDiv.innerText = 'navigator.ai.writer is not defined.';
+                    return;
+                }
+                outputDiv.innerText = 'Creating writer...';
+                const writer = await navigator.ai.writer.create();
+                outputDiv.innerText = 'Writing...';
+                const result = await writer.write('Write a short poem about a cat.');
+                outputDiv.innerText = result;
+            } catch (error) {
+                outputDiv.innerText = 'Error: ' + error.message;
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
