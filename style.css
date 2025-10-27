@@ -1,69 +1,133 @@
-body {
-    font-family: sans-serif;
+/* Material Design 3-inspired styles */
+:root {
+    --primary: #6200EE; /* M3 primary color */
+    --on-primary: #FFFFFF;
+    --surface: #F5F5F5;
+    --on-surface: #1C2526;
+    --outline: #757575;
+    --elevation-1: #FFFFFF;
+    --elevation-2: #E8EAF6;
+    --corner-radius: 8px;
+    --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
     margin: 0;
-    background-color: #f0f2f5;
-    color: #333;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-family);
+}
+
+body {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    padding: 16px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 header {
-    background-color: #4a90e2;
-    color: white;
-    padding: 1rem;
     text-align: center;
+    margin-bottom: 24px;
 }
 
-main {
-    padding: 1rem;
+header h1 {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--primary);
 }
 
-#input-container, #itinerary-container, #customization-container {
-    background-color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
+header p {
+    font-size: 16px;
+    color: var(--on-surface);
+    opacity: 0.7;
 }
 
-input, textarea {
+section {
+    background-color: var(--elevation-1);
+    border-radius: var(--corner-radius);
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--on-surface);
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background-color: var(--elevation-1);
+    padding: 0 4px;
+    font-size: 12px;
+    color: var(--on-surface);
+    opacity: 0.6;
+}
+
+input, textarea, select {
     width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border: 1px solid #ccc;
+    padding: 12px;
+    border: 1px solid var(--outline);
     border-radius: 4px;
+    font-size: 16px;
+    background-color: var(--elevation-2);
+    transition: border-color 0.2s;
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 button {
-    background-color: #4a90e2;
-    color: white;
-    padding: 0.75rem 1.5rem;
+    padding: 10px 24px;
+    background-color: var(--primary);
+    color: var(--on-primary);
     border: none;
     border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 button:hover {
-    background-color: #357abd;
+    background-color: #3700B3;
 }
 
-.collapsible {
-    background-color: #eee;
-    color: #444;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-    margin-top: 5px;
+#itineraryOutput {
+    border: 1px solid var(--outline);
+    border-radius: 4px;
+    padding: 16px;
+    min-height: 100px;
+    background-color: var(--elevation-2);
 }
 
-.active, .collapsible:hover {
-    background-color: #ccc;
-}
-
-.content {
-    padding: 0 18px;
-    display: none;
-    overflow: hidden;
-    background-color: #f1f1f1;
+/* Responsive design */
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+    header h1 {
+        font-size: 24px;
+    }
+    section {
+        padding: 12px;
+    }
 }

@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="origin-trial" content="A/EGsaF5VQpYrqCKqGK/hmx58RM2+fehsytnWwJtx1vD2ufFmrIDekmA3jiG7zkpA0onc1s3GmAX5dcyCmPmew0AAABieyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjU1MDAiLCJmZWF0dXJlIjoiQUlXcml0ZXJBUEkiLCJleHBpcnkiOjE3Njk0NzIwMDAsImlzVGhpcmRQYXJ0eSI6dHJ1ZX0=">
+    <meta http-equiv="origin-trial" content="A2Kax4GCLCPiYPpWeD3uqtk8uGBZHeGfZv6pS5LrGZz4Fm54u4RETfbiWQIkoI8PganGnmuLVE7Ii1ErxWOBtgEAAABkeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjU1MDAiLCJmZWF0dXJlIjoiQUlSZXdyaXRlckFQSSIsImV4cGlyeSI6MTc2OTQ3MjAwMCwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ==">
     <title>WanderAI - Offline Travel Planner</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
@@ -13,21 +15,51 @@
         <p>Your AI-Powered Offline Travel Planner</p>
     </header>
     <main>
-        <div id="input-container">
+        <section id="input-container">
             <h2>Create Your Itinerary</h2>
-            <input type="text" id="destinationInput" placeholder="Enter destination (e.g., Paris for 3 days)">
-            <textarea id="detailsInput" placeholder="Optional details (e.g., interests like food and history)"></textarea>
+            <div class="input-group">
+                <input type="text" id="destinationInput" placeholder="Enter destination (e.g., Paris for 3 days)">
+                <label for="destinationInput">Destination</label>
+            </div>
+            <div class="input-group">
+                <textarea id="detailsInput" placeholder="Optional details (e.g., interests like food and history)"></textarea>
+                <label for="detailsInput">Details</label>
+            </div>
             <button id="generateBtn">Generate Itinerary</button>
-        </div>
-        <div id="itinerary-container">
+        </section>
+        <section id="itinerary-container">
             <h2>Your Itinerary</h2>
             <div id="itineraryOutput"></div>
-        </div>
-        <div id="customization-container">
+        </section>
+        <section id="customization-container">
             <h2>Customize Your Plan</h2>
-            <textarea id="rewriteInput" placeholder="e.g., Rewrite for a low budget, Make it more adventurous"></textarea>
+            <div class="input-group">
+                <textarea id="rewriteInput" placeholder="e.g., Rewrite for a low budget, Make it more adventurous"></textarea>
+                <label for="rewriteInput">Rewrite Instructions</label>
+            </div>
             <button id="rewriteBtn">Rewrite Plan</button>
-        </div>
+        </section>
+        <section id="additional-features">
+            <h2>Additional Features</h2>
+            <div class="input-group">
+                <textarea id="summaryInput" placeholder="Enter text to summarize (e.g., itinerary details)"></textarea>
+                <label for="summaryInput">Text to Summarize</label>
+            </div>
+            <button id="summarizeBtn">Summarize Text</button>
+            <div class="input-group">
+                <input id="phraseInput" placeholder="Enter phrase to translate (e.g., 'Hello')">
+                <label for="phraseInput">Phrase</label>
+            </div>
+            <div class="input-group">
+                <select id="langSelect">
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                </select>
+                <label for="langSelect">Language</label>
+            </div>
+            <button id="translateBtn">Translate Phrase</button>
+        </section>
     </main>
     <script src="app.js"></script>
 </body>
