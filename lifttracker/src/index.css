@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/* Design tokens from the accepted wireframe: dark base for the gym floor,
+   one cyan action color, Barlow for text and Barlow Condensed for numerals.
+   Light theme follows the device setting. */
+@theme {
+  --font-ui: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-num: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+
+  --color-canvas: oklch(0.17 0.012 230);
+  --color-card: oklch(0.22 0.012 230);
+  --color-raised: oklch(0.27 0.012 230);
+  --color-rule: oklch(0.34 0.012 230);
+  --color-rule-strong: oklch(0.46 0.012 230);
+  --color-ink: oklch(0.95 0.01 230);
+  --color-ink-2: oklch(0.74 0.015 230);
+  --color-act: oklch(0.86 0.13 195);
+  --color-on-act: oklch(0.18 0.03 195);
+  --color-up: oklch(0.82 0.12 150);
+  --color-down: oklch(0.80 0.13 40);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-canvas: oklch(0.97 0.006 230);
+    --color-card: oklch(1 0 0);
+    --color-raised: oklch(0.93 0.008 230);
+    --color-rule: oklch(0.86 0.01 230);
+    --color-rule-strong: oklch(0.70 0.012 230);
+    --color-ink: oklch(0.20 0.015 230);
+    --color-ink-2: oklch(0.46 0.015 230);
+    --color-act: oklch(0.48 0.11 195);
+    --color-on-act: oklch(0.99 0 0);
+    --color-up: oklch(0.52 0.13 150);
+    --color-down: oklch(0.55 0.15 40);
+  }
+}
+
+html {
+  color-scheme: dark light;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+}

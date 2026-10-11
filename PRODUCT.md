@@ -70,14 +70,16 @@ Phase 1, as specified in `lifttracker/prd.md`:
 Constraints: one-handed, offline, no automatic progression, no AI features.
 Reps may be logged above or below the target range.
 
-Undecided: visual direction, touch target sizes, type scale, theme. Wireframe
-directions are being prepared for Franklin to choose from. Nothing visual is
-committed.
+Visual direction, accepted by Franklin on October 11, 2026: dark base with one
+cyan action color, a light theme that follows the device setting, Barlow for
+text and Barlow Condensed for numerals. The rest timer sits at the bottom of
+the workout screen. Touch target sizes and the type scale are not yet fixed.
 
 ## Brand Commitments
 
-Name: LiftTracker (confirmed October 11, 2026). No logo, palette, typeface, or
-voice has been decided.
+Name: LiftTracker (confirmed October 11, 2026). Palette and typefaces are
+recorded in the decisions log of `lifttracker/prd.md`. No logo or voice has
+been decided.
 
 ## Evidence on Hand
 
