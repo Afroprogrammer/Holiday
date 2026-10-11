@@ -60,7 +60,6 @@ Phase 1, as specified in `lifttracker/prd.md`:
   alternatives, set rows prefilled from the last session, weight and reps with
   steppers, Done per set, add an extra set, skip a set, Finish with
   confirmation when sets remain.
-- Optional pain flag per set, recorded only.
 - Automatic rest timer that survives screen lock and shows overtime.
 - Per-exercise display unit with the other unit shown beside it. Weight is
   stored exactly as entered, with its unit.
