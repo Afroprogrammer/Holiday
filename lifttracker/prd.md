@@ -1,6 +1,6 @@
 # LiftTracker product requirements
 
-**Status:** Planning. No application code exists yet.
+**Status:** Phase 1 in progress. The project skeleton lives in `lifttracker/`; no screens are built yet.
 **Owner:** Franklin
 **Last updated:** October 11, 2026
 
@@ -299,6 +299,8 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 11, 2026 | Deadlift rest default is 120 seconds. |
 | October 11, 2026 | The app name stays LiftTracker. |
 | October 11, 2026 | Rest time is configurable for every exercise, not only a global default. |
+| October 11, 2026 | Visual direction, from the accepted wireframe: dark base with one cyan action color, a light theme that follows the device setting, Barlow for text and Barlow Condensed for numerals. |
+| October 11, 2026 | The rest timer sits at the bottom of the workout screen so the open set stays visible above it. |
 
 ## Open items
 
