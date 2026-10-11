@@ -92,8 +92,6 @@ Notes on the tables:
   app prefills from whichever you did last.
 - Rest times in the tables are starting defaults. Every exercise's rest time
   is configurable. See [Rest timer](#rest-timer).
-- Deadlift carries a knee caution in the original program. See the pain flag
-  under [Set logging](#set-logging).
 
 ## Phases
 
@@ -163,7 +161,6 @@ Each logged set records:
 | weight | The number as entered |
 | unit | `kg` or `lb`, the unit the weight was entered in |
 | reps | Reps completed. For time-based exercises, seconds |
-| pain flag | Optional. One tap marks the set as having caused knee discomfort |
 | logged at | Timestamp |
 
 Rules:
@@ -174,8 +171,6 @@ Rules:
 - Zero weight is valid and means bodyweight only, for dips and knee raises.
 - For assisted exercises, the weight is the assistance. The exercise carries a
   "lower is better" flag so later phases chart it correctly.
-- The pain flag exists so that you can correlate knee discomfort with load over
-  time. Phase 1 only records it.
 
 ### Prefill
 
@@ -243,7 +238,7 @@ because of its size cap and synchronous API.
 | `exercises` | id, name, category, displayUnit, incrementKg, incrementLb, restSeconds, lowerIsBetter, isTimeBased | Seeded. Settings fields are editable. |
 | `programDays` | id, name, order, slots[] | Each slot has exerciseIds[] (one, or two for alternatives), targetSets, repMin, repMax. Read-only in Phase 1. |
 | `workouts` | id, programDayId, startedAt, finishedAt | `finishedAt` is null while active. At most one active workout. |
-| `sets` | id, workoutId, exerciseId, setNumber, weight, unit, reps, painFlag, loggedAt | Append-only. |
+| `sets` | id, workoutId, exerciseId, setNumber, weight, unit, reps, loggedAt | Append-only. |
 | `settings` | key, value | Default rest durations, cycle position, first-run flags. |
 
 This shape maps directly onto the SQLite tables in the original specification
