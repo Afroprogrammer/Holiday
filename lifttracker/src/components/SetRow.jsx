@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { convertWeight, formatWeightBoth, incrementFor, otherUnit } from '../lib/units.js'
+import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
 import { rangeMarker } from '../lib/prefill.js'
 
 function Marker({ marker }) {
@@ -62,7 +62,7 @@ function Stepper({ value, onChange, step, label, sub, inputMode }) {
   const bump = (delta) => onChange(String(Math.max(0, Math.round((num + delta) * 100) / 100)))
   return (
     <div className="grid grid-cols-[40px_1fr_40px] overflow-hidden rounded-lg border border-rule-strong bg-raised">
-      <button type="button" aria-label={`${label} minus`} className="text-xl text-ink-2" onClick={() => bump(-step)}>
+      <button type="button" aria-label={`${label} minus`} className="grid place-items-center text-xl leading-none text-ink-2" onClick={() => bump(-step)}>
         −
       </button>
       <label className="border-x border-rule py-1 text-center">
@@ -72,11 +72,11 @@ function Stepper({ value, onChange, step, label, sub, inputMode }) {
           inputMode={inputMode}
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
-          className="w-full bg-transparent text-center font-num text-2xl font-semibold leading-none tabular-nums outline-none"
+          className="h-7 w-full bg-transparent text-center font-num text-2xl font-semibold leading-none tabular-nums outline-none"
         />
-        <span className="block text-[10px] text-ink-2">{sub}</span>
+        <span className="block truncate text-[10px] text-ink-2">{sub}</span>
       </label>
-      <button type="button" aria-label={`${label} plus`} className="text-xl text-ink-2" onClick={() => bump(step)}>
+      <button type="button" aria-label={`${label} plus`} className="grid place-items-center text-xl leading-none text-ink-2" onClick={() => bump(step)}>
         +
       </button>
     </div>
@@ -106,7 +106,7 @@ export function OpenSetRow({ setNumber, exercise, prefill, onDone }) {
             step={incrementFor(exercise, unit)}
             label="Weight"
             inputMode="decimal"
-            sub={ready || weight !== '' ? formatWeightBoth(weightNum, unit).replace(`${weightNum} `, '') : `${unit} · ${otherUnit(unit)}`}
+            sub={weight !== '' ? `${unit} · ${convertWeight(weightNum, unit, otherUnit(unit))} ${otherUnit(unit)}` : `${unit} · ${otherUnit(unit)}`}
           />
           <Stepper value={reps} onChange={setReps} step={1} label="Reps" inputMode="numeric" sub="reps" />
           <button
