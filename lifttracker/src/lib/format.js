@@ -6,3 +6,8 @@ export function formatWorkoutDate(isoString) {
     day: 'numeric',
   }).format(new Date(isoString))
 }
+
+// "09:52", the workout's start time in the workout screen header.
+export function formatClockTime(isoString) {
+  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(new Date(isoString))
+}
