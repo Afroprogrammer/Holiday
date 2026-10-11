@@ -90,8 +90,8 @@ Notes on the tables:
   woodchoppers). Each alternative is seeded as its own exercise with its own
   history. The slot shows both and you pick which one you're doing today. The
   app prefills from whichever you did last.
-- Rest times in the tables are starting defaults. See
-  [Rest timer](#rest-timer).
+- Rest times in the tables are starting defaults. Every exercise's rest time
+  is configurable. See [Rest timer](#rest-timer).
 - Deadlift carries a knee caution in the original program. See the pain flag
   under [Set logging](#set-logging).
 
@@ -203,9 +203,11 @@ converted and marked, for example `last: 90 lb (40.8 kg)`.
 
 ### Rest timer
 
-- Each exercise has a rest duration. Seed values are in the program tables.
+- Every exercise has its own rest duration. Seed values are in the program
+  tables and are starting points only. No exercise has a fixed rest time.
 - You can change the duration in three places:
-  - Per exercise, in that exercise's settings. Saved permanently.
+  - Per exercise, in that exercise's settings. Saved permanently. This covers
+    all 20 exercises and both alternatives in each alternative slot.
   - During a workout, on the running timer, with plus and minus 15 second
     buttons and a **Skip** button. This affects the current rest only.
   - Globally, in settings, for the two defaults used by new exercises: one for
@@ -299,9 +301,10 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 11, 2026 | Weighted planks removed from Pull B. Machine ab crunch takes the slot. |
 | October 11, 2026 | Swap exercise for today is deferred to Phase 2. |
 | October 11, 2026 | Plan lives in `lifttracker/` in the Holiday repository. |
+| October 11, 2026 | Deadlift rest default is 120 seconds. |
+| October 11, 2026 | The app name stays LiftTracker. |
+| October 11, 2026 | Rest time is configurable for every exercise, not only a global default. |
 
 ## Open items
 
-- Confirm the Pull B deadlift rest default of 120 seconds. The original
-  program gave no rest times, so all values are proposals.
-- Decide whether the app name stays LiftTracker.
+None. All Phase 1 decisions are recorded in the decisions log.
