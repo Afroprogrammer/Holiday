@@ -11,3 +11,11 @@ export function formatWorkoutDate(isoString) {
 export function formatClockTime(isoString) {
   return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(new Date(isoString))
 }
+
+// "Thu 9 Oct", for the home screen's last-completed line and history rows.
+export function formatShortDate(isoString) {
+  const d = new Date(isoString)
+  const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short' }).format(d)
+  const month = new Intl.DateTimeFormat('en-GB', { month: 'short' }).format(d)
+  return `${weekday} ${d.getDate()} ${month}`
+}
