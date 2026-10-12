@@ -1,64 +1,95 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import SecondsField from '../components/SecondsField.jsx'
+import Illustration from '../components/Illustration.jsx'
+import NumberField from '../components/NumberField.jsx'
+import { getProgramDays } from '../db/queries.js'
 import { getExercise, updateExercise } from '../db/settings.js'
+import { getExerciseHistory } from '../db/workouts.js'
+import { formatShortDate } from '../lib/format.js'
+import { formatSession } from '../lib/history.js'
+import { exercisePlacements, placementCaption } from '../lib/placement.js'
 
-function NumberRow({ label, value, onChange, suffix }) {
-  return (
-    <label className="flex items-center justify-between gap-3 border-b border-rule py-2">
-      <span className="text-ink-2">{label}</span>
-      <span className="flex items-baseline gap-1">
-        <input
-          type="text"
-          inputMode="decimal"
-          value={value}
-          aria-label={label}
-          onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
-          className="w-16 rounded-md border border-rule bg-raised px-2 py-1 text-right font-num text-base font-semibold tabular-nums outline-none"
-        />
-        <span className="text-sm text-ink-2">{suffix}</span>
-      </span>
-    </label>
-  )
+function Group({ children }) {
+  return <h2 className="mt-6 mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-3">{children}</h2>
 }
 
-// Per-exercise overrides (prd.md, "Settings"): display unit, increment, and
-// rest duration. Every change is saved permanently.
+// Per-exercise overrides (prd.md, "Settings"): display unit, increments, and
+// rest, plus the last five sessions so history can be sanity-checked here.
 export default function ExerciseSettings({ exerciseId }) {
   const exercise = useLiveQuery(() => getExercise(exerciseId), [exerciseId])
+  const days = useLiveQuery(getProgramDays, [], [])
+  const history = useLiveQuery(() => getExerciseHistory(exerciseId, 5), [exerciseId], [])
   if (exercise === undefined) return null
-  if (!exercise) return <p className="p-4 text-ink-2">Unknown exercise.</p>
+  if (!exercise) return <p className="p-5 text-ink-2">Unknown exercise.</p>
 
   const save = (patch) => updateExercise(exercise.id, patch)
   const num = (v) => (v === '' ? 0 : Number(v))
+  const placements = exercisePlacements(exercise.id, days)
+  const slot = days.flatMap((d) => d.slots).find((s) => s.exerciseIds.includes(exercise.id))
+  const targets = slot ? `${slot.targetSets} sets · ${slot.repMin === slot.repMax ? slot.repMin : `${slot.repMin}–${slot.repMax}`} reps` : ''
+  const compound = exercise.category === 'compound'
 
   return (
-    <main className="flex min-h-dvh flex-col gap-2 p-4">
-      <header className="flex items-baseline justify-between gap-3">
-        <span className="font-num text-2xl font-semibold">{exercise.name}</span>
-        <a href="#settings" className="shrink-0 font-medium text-act">
-          Back
+    <main className="min-h-dvh px-5 pt-3.5 pb-8">
+      <header className="flex h-11 items-center">
+        <a href="#settings" className="font-semibold text-act">
+          ‹ Settings
         </a>
       </header>
 
-      <div className="flex items-center justify-between gap-3 border-b border-rule py-2">
-        <span className="text-ink-2">Display unit</span>
-        <div className="grid grid-cols-2 overflow-hidden rounded-md border border-rule text-center text-sm">
+      <section className="mt-1 flex items-end gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-act">{placementCaption(placements)}</p>
+          <h1 className="mt-1 font-num text-[40px] font-bold uppercase leading-[0.95]">{exercise.name}</h1>
+          <p className="mt-1.5 text-[15px] text-ink-2">{targets}</p>
+        </div>
+        <Illustration slug={exercise.illustration} size={96} tone="ink-2" />
+      </section>
+
+      <Group>Units</Group>
+      <div className="flex min-h-14 items-center justify-between gap-3 border-b border-rule py-2">
+        <span>
+          <span className="block text-base">Display unit</span>
+          <span className="block text-[13px] text-ink-2">equipment is marked in</span>
+        </span>
+        <div role="group" aria-label="Display unit" className="flex h-11 overflow-hidden rounded-lg border border-rule bg-raised">
           {['kg', 'lb'].map((unit) => (
             <button
               key={unit}
               type="button"
+              aria-pressed={exercise.displayUnit === unit}
               onClick={() => save({ displayUnit: unit })}
-              className={exercise.displayUnit === unit ? 'bg-raised px-4 py-1 font-semibold' : 'px-4 py-1 text-ink-2'}
+              className={`w-14 text-[15px] font-semibold ${exercise.displayUnit === unit ? 'bg-act text-on-act' : 'text-ink-2'}`}
             >
               {unit}
             </button>
           ))}
         </div>
       </div>
+      <NumberField label="Step on kg equipment" value={String(exercise.incrementKg)} suffix="kg" inputMode="decimal" onChange={(v) => save({ incrementKg: num(v) })} />
+      <NumberField label="Step on lb equipment" value={String(exercise.incrementLb)} suffix="lb" inputMode="decimal" onChange={(v) => save({ incrementLb: num(v) })} />
 
-      <NumberRow label="Increment on kg equipment" value={String(exercise.incrementKg)} suffix="kg" onChange={(v) => save({ incrementKg: num(v) })} />
-      <NumberRow label="Increment on lb equipment" value={String(exercise.incrementLb)} suffix="lb" onChange={(v) => save({ incrementLb: num(v) })} />
-      <SecondsField label="Rest" value={String(exercise.restSeconds)} onChange={(v) => save({ restSeconds: num(v) })} />
+      <Group>Rest</Group>
+      <NumberField
+        label="Rest after a set"
+        caption={`default for ${compound ? 'compound lifts is 90 s' : 'isolation and core is 60 s'}`}
+        value={String(exercise.restSeconds)}
+        suffix="s"
+        onChange={(v) => save({ restSeconds: num(v) })}
+      />
+
+      <Group>History</Group>
+      {history.length === 0 ? (
+        <p className="min-h-14 py-2 text-[15px] text-ink-2">No sessions yet</p>
+      ) : (
+        <ul>
+          {history.map((session) => (
+            <li key={session.workoutId} className="flex min-h-14 items-center justify-between gap-3 border-b border-rule py-2 last:border-0">
+              <span className="text-[13px] text-ink-2">{formatShortDate(session.finishedAt)}</span>
+              <span className="text-right font-num text-[17px] font-semibold">{formatSession(session.sets)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   )
 }
