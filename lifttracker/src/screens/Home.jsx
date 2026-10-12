@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import CycleBar from '../components/CycleBar.jsx'
 import DaySheet from '../components/DaySheet.jsx'
 import Illustration from '../components/Illustration.jsx'
+import UpdateBanner from '../components/UpdateBanner.jsx'
 import { getHomeView } from '../db/queries.js'
 import { formatSession } from '../lib/history.js'
 import { useInstallPrompt } from '../lib/install.js'
@@ -12,7 +13,7 @@ import { shortName } from '../lib/workoutProgress.js'
 // Home ("Poster"): the next day as a poster, the cycle, today's exercises as
 // a strip of figures, and what you did last time. Start is pinned to the
 // bottom with the day override behind a sheet.
-export default function Home({ onStart }) {
+export default function Home({ onStart, update }) {
   const view = useLiveQuery(getHomeView)
   const [picking, setPicking] = useState(false)
   const { canInstall, installed, install } = useInstallPrompt()
@@ -29,6 +30,7 @@ export default function Home({ onStart }) {
             Settings
           </a>
         </header>
+        <UpdateBanner ready={update?.ready ?? false} apply={update?.apply} />
 
         <section className="mt-7">
           <p className="text-[15px] font-medium text-ink-2">

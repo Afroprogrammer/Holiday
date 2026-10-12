@@ -5,6 +5,7 @@ import Workout from './screens/Workout.jsx'
 import Settings from './screens/Settings.jsx'
 import ExerciseSettings from './screens/ExerciseSettings.jsx'
 import { getActiveWorkout, startWorkout } from './db/workouts.js'
+import { useAppUpdate } from './lib/update.js'
 
 function useHash() {
   const [hash, setHash] = useState(() => window.location.hash)
@@ -22,10 +23,12 @@ function useHash() {
 export default function App() {
   const hash = useHash()
   const active = useLiveQuery(getActiveWorkout)
+  // Registered here so the worker is set up whichever screen opens first.
+  const update = useAppUpdate()
   if (active === undefined) return null
 
   if (hash.startsWith('#settings/')) return <ExerciseSettings exerciseId={decodeURIComponent(hash.slice('#settings/'.length))} />
   if (hash === '#settings') return <Settings />
   if (active) return <Workout workoutId={active.id} />
-  return <Home onStart={(day) => startWorkout(day.id)} />
+  return <Home onStart={(day) => startWorkout(day.id)} update={update} />
 }
