@@ -5,6 +5,7 @@ import DaySheet from '../components/DaySheet.jsx'
 import Illustration from '../components/Illustration.jsx'
 import { getHomeView } from '../db/queries.js'
 import { formatSession } from '../lib/history.js'
+import { useInstallPrompt } from '../lib/install.js'
 import { formatShortDate } from '../lib/format.js'
 import { shortName } from '../lib/workoutProgress.js'
 
@@ -14,6 +15,7 @@ import { shortName } from '../lib/workoutProgress.js'
 export default function Home({ onStart }) {
   const view = useLiveQuery(getHomeView)
   const [picking, setPicking] = useState(false)
+  const { canInstall, installed, install } = useInstallPrompt()
   if (view === undefined) return null
   const { nextDay, days, lastWorkout, exercisesById, firstExercise, firstSession, stripSlugs } = view
   const [dayWord, dayLetter] = (nextDay?.name ?? '–').split(' ')
@@ -44,6 +46,17 @@ export default function Home({ onStart }) {
               </span>
             ))}
           </div>
+          {canInstall && !installed && (
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-rule bg-card px-4 py-3">
+              <span className="min-w-0 flex-1">
+                <span className="block text-base font-semibold">Install on this phone</span>
+                <span className="block text-[13px] text-ink-2">Opens full screen, works offline</span>
+              </span>
+              <button type="button" onClick={install} className="h-11 shrink-0 rounded-xl bg-act px-4 font-semibold text-on-act">
+                Install
+              </button>
+            </div>
+          )}
           <dl className="mt-6 border-t border-rule pt-4 text-[15px] text-ink-2">
             <div className="flex items-baseline justify-between">
               <dt>Last completed</dt>
