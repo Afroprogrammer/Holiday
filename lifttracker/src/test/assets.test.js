@@ -11,3 +11,11 @@ describe('shipped fonts', () => {
     expect(statSync(path).size).toBeGreaterThan(5000)
   })
 })
+
+describe('install screenshots', () => {
+  it.each(['screenshot-home.png', 'screenshot-workout.png'])('ships public/%s', (file) => {
+    const path = new URL(`../../public/${file}`, import.meta.url)
+    expect(existsSync(path)).toBe(true)
+    expect(statSync(path).size).toBeGreaterThan(10_000)
+  })
+})

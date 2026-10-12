@@ -22,6 +22,13 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         start_url: '.',
+        id: './',
+        scope: './',
+        categories: ['health', 'fitness'],
+        screenshots: [
+          { src: 'screenshot-home.png', sizes: '540x1170', type: 'image/png', form_factor: 'narrow', label: 'Home' },
+          { src: 'screenshot-workout.png', sizes: '540x1170', type: 'image/png', form_factor: 'narrow', label: 'Workout' },
+        ],
         background_color: '#0a1020',
         theme_color: '#0a1020',
         // Chrome on Android only offers "Install app" when a PNG icon of at
