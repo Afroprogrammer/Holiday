@@ -26,4 +26,8 @@ async function backfill(database) {
       await database.exercises.update(seeded.id, { illustration: seeded.illustration })
     }
   }
+  for (const setting of defaultSettings) {
+    const stored = await database.settings.get(setting.key)
+    if (!stored) await database.settings.add(setting)
+  }
 }

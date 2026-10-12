@@ -35,4 +35,20 @@ describe('seedIfEmpty', () => {
     expect(bench.illustration).toBe('bench-press')
     expect(bench.restSeconds).toBe(75)
   })
+
+  it('seeds the workout preference keys', async () => {
+    await seedIfEmpty(database)
+    expect((await database.settings.get('keepScreenOn')).value).toBe(true)
+    expect((await database.settings.get('restNotification')).value).toBe(true)
+    expect((await database.settings.get('restNotificationAsked')).value).toBe(false)
+  })
+
+  it('backfills missing settings keys without touching stored ones', async () => {
+    await seedIfEmpty(database)
+    await database.settings.delete('keepScreenOn')
+    await database.settings.put({ key: 'restNotification', value: false })
+    await seedIfEmpty(database)
+    expect((await database.settings.get('keepScreenOn')).value).toBe(true)
+    expect((await database.settings.get('restNotification')).value).toBe(false)
+  })
 })

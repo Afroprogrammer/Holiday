@@ -34,3 +34,9 @@ export async function updateExercise(id, patch) {
 export async function resetCycle(programDayId) {
   await setSetting('nextProgramDayId', programDayId)
 }
+
+export const SETTING_KEYS = {
+  keepScreenOn: 'keepScreenOn',
+  restNotification: 'restNotification',
+  restNotificationAsked: 'restNotificationAsked',
+}

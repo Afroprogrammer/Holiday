@@ -106,10 +106,14 @@ export const programDays = [
   },
 ]
 
-// Global defaults for new exercises ("Rest timer", third bullet).
+// Global defaults for new installs ("Rest timer", third bullet; Android
+// install spec, sections 3.1 and 3.2). Missing keys are backfilled on launch.
 export const defaultSettings = [
   { key: 'defaultRestCompoundSeconds', value: 90 },
   { key: 'defaultRestIsolationSeconds', value: 60 },
   { key: 'nextProgramDayId', value: 'push-a' },
   { key: 'firstRunShown', value: false },
+  { key: 'keepScreenOn', value: true },
+  { key: 'restNotification', value: true },
+  { key: 'restNotificationAsked', value: false },
 ]
