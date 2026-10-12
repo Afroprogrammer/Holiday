@@ -5,7 +5,7 @@
 export const KG = 'kg'
 export const LB = 'lb'
 
-const exercise = (id, name, category, displayUnit, restSeconds, extra = {}) => ({
+const exercise = (id, name, category, displayUnit, restSeconds, illustration, extra = {}) => ({
   id,
   name,
   category,
@@ -13,6 +13,7 @@ const exercise = (id, name, category, displayUnit, restSeconds, extra = {}) => (
   incrementKg: 2.5,
   incrementLb: 5,
   restSeconds,
+  illustration,
   lowerIsBetter: false,
   isTimeBased: false,
   ...extra,
@@ -20,31 +21,31 @@ const exercise = (id, name, category, displayUnit, restSeconds, extra = {}) => (
 
 export const exercises = [
   // Push A
-  exercise('barbell-bench-press', 'Barbell bench press', 'compound', KG, 90),
-  exercise('machine-chest-press', 'Machine chest press', 'isolation', KG, 60),
-  exercise('dumbbell-shoulder-press', 'Dumbbell shoulder press', 'compound', LB, 90),
-  exercise('dips', 'Dips, bodyweight or assisted', 'compound', KG, 90),
-  exercise('weighted-cable-crunch', 'Weighted cable crunch', 'core', KG, 60),
+  exercise('barbell-bench-press', 'Barbell bench press', 'compound', KG, 90, 'bench-press'),
+  exercise('machine-chest-press', 'Machine chest press', 'isolation', KG, 60, 'machine-chest-press'),
+  exercise('dumbbell-shoulder-press', 'Dumbbell shoulder press', 'compound', LB, 90, 'seated-dumbbell-press'),
+  exercise('dips', 'Dips, bodyweight or assisted', 'compound', KG, 90, 'dip'),
+  exercise('weighted-cable-crunch', 'Weighted cable crunch', 'core', KG, 60, 'cable-crunch'),
   // Pull A
-  exercise('assisted-pull-ups', 'Assisted pull-ups', 'compound', KG, 90, { lowerIsBetter: true }),
-  exercise('row-machine', 'Row machine, seated cable or chest-supported', 'isolation', KG, 60),
-  exercise('barbell-shrugs', 'Barbell shrugs', 'isolation', KG, 60),
-  exercise('dumbbell-shrugs', 'Dumbbell shrugs', 'isolation', LB, 60),
-  exercise('barbell-curls', 'Barbell curls', 'isolation', KG, 60),
-  exercise('dumbbell-curls', 'Dumbbell curls', 'isolation', LB, 60),
-  exercise('hanging-knee-raises', 'Hanging knee raises', 'core', KG, 60),
-  exercise('cable-woodchoppers', 'Cable woodchoppers', 'core', KG, 60),
+  exercise('assisted-pull-ups', 'Assisted pull-ups', 'compound', KG, 90, 'assisted-pull-up', { lowerIsBetter: true }),
+  exercise('row-machine', 'Row machine, seated cable or chest-supported', 'isolation', KG, 60, 'seated-row'),
+  exercise('barbell-shrugs', 'Barbell shrugs', 'isolation', KG, 60, 'shrug'),
+  exercise('dumbbell-shrugs', 'Dumbbell shrugs', 'isolation', LB, 60, 'dumbbell-shrug'),
+  exercise('barbell-curls', 'Barbell curls', 'isolation', KG, 60, 'bicep-curl'),
+  exercise('dumbbell-curls', 'Dumbbell curls', 'isolation', LB, 60, 'bicep-curl'),
+  exercise('hanging-knee-raises', 'Hanging knee raises', 'core', KG, 60, 'hanging-knee-raise'),
+  exercise('cable-woodchoppers', 'Cable woodchoppers', 'core', KG, 60, 'cable-woodchop'),
   // Push B (machine chest press is shared with Push A)
-  exercise('incline-dumbbell-press', 'Incline dumbbell press', 'compound', LB, 90),
-  exercise('barbell-overhead-press', 'Barbell overhead press', 'compound', KG, 90),
-  exercise('tricep-pushdowns', 'Tricep pushdowns, cable', 'isolation', KG, 60),
-  exercise('weighted-decline-sit-ups', 'Weighted decline sit-ups', 'core', KG, 60),
+  exercise('incline-dumbbell-press', 'Incline dumbbell press', 'compound', LB, 90, 'incline-dumbbell-press'),
+  exercise('barbell-overhead-press', 'Barbell overhead press', 'compound', KG, 90, 'overhead-press'),
+  exercise('tricep-pushdowns', 'Tricep pushdowns, cable', 'isolation', KG, 60, 'tricep-pushdown'),
+  exercise('weighted-decline-sit-ups', 'Weighted decline sit-ups', 'core', KG, 60, 'decline-sit-up'),
   // Pull B
-  exercise('deadlift', 'Deadlift, conventional or Romanian', 'compound', KG, 120),
-  exercise('lat-pulldown', 'Lat pulldown', 'isolation', KG, 60),
-  exercise('barbell-bent-over-row', 'Barbell bent-over row', 'compound', KG, 90),
-  exercise('heavy-dumbbell-shrugs', 'Heavy dumbbell shrugs', 'isolation', LB, 60),
-  exercise('machine-ab-crunch', 'Machine ab crunch', 'core', KG, 60),
+  exercise('deadlift', 'Deadlift, conventional or Romanian', 'compound', KG, 120, 'deadlift'),
+  exercise('lat-pulldown', 'Lat pulldown', 'isolation', KG, 60, 'lat-pulldown'),
+  exercise('barbell-bent-over-row', 'Barbell bent-over row', 'compound', KG, 90, 'barbell-row'),
+  exercise('heavy-dumbbell-shrugs', 'Heavy dumbbell shrugs', 'isolation', LB, 60, 'dumbbell-shrug'),
+  exercise('machine-ab-crunch', 'Machine ab crunch', 'core', KG, 60, 'weighted-crunch'),
 ]
 
 const slot = (exerciseIds, targetSets, repMin, repMax) => ({
