@@ -1,5 +1,6 @@
 import { db } from './db.js'
 import { nextProgramDayAfter } from '../lib/cycle.js'
+import { groupSessions } from '../lib/history.js'
 
 const now = () => new Date().toISOString()
 const newId = () => crypto.randomUUID()
@@ -87,4 +88,12 @@ export async function getActiveRest() {
 export async function saveActiveRest(rest) {
   if (rest) await db.settings.put({ key: 'activeRest', value: rest })
   else await db.settings.delete('activeRest')
+}
+
+// The last `limit` finished sessions containing an exercise, newest first,
+// for the history list on the exercise settings screen.
+export async function getExerciseHistory(exerciseId, limit = 5) {
+  const sets = await db.sets.where('exerciseId').equals(exerciseId).toArray()
+  const workouts = await db.workouts.toArray()
+  return groupSessions(sets, workouts, limit)
 }
