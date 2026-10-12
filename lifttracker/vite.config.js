@@ -21,8 +21,8 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         start_url: '.',
-        background_color: '#1a1e22',
-        theme_color: '#1a1e22',
+        background_color: '#0a1020',
+        theme_color: '#0a1020',
         // Chrome on Android only offers "Install app" when a PNG icon of at
         // least 192 px is listed; the SVG alone does not qualify.
         icons: [

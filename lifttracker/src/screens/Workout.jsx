@@ -95,7 +95,7 @@ export default function Workout({ workoutId, onFinished }) {
       <button
         type="button"
         onClick={finish}
-        className="mt-auto rounded-xl border border-rule-strong px-4 py-3 font-medium"
+        className="mt-auto rounded-xl border border-rule px-4 py-3 font-medium"
       >
         Finish
       </button>

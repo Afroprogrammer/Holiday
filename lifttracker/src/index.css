@@ -15,39 +15,38 @@
   src: url("/fonts/source-sans-3.woff2") format("woff2");
 }
 
-/* Design tokens from the accepted wireframe: dark base for the gym floor,
-   one cyan action color, Barlow for text and Barlow Condensed for numerals.
-   Light theme follows the device setting. */
+/* Night shift: deep navy ground, cool white ink, one amber accent for action
+   and "now", coral only for reps outside the target range. Oswald carries
+   display and numerals, Source Sans 3 carries text. Accepted October 12, 2026.
+   See docs/superpowers/specs/2026-10-12-lifttracker-visual-redesign-design.md. */
 @theme {
-  --font-ui: "Barlow", "Helvetica Neue", Arial, sans-serif;
-  --font-num: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-ui: "Source Sans 3", system-ui, sans-serif;
+  --font-num: "Oswald", "Arial Narrow", sans-serif;
 
-  --color-canvas: oklch(0.17 0.012 230);
-  --color-card: oklch(0.22 0.012 230);
-  --color-raised: oklch(0.27 0.012 230);
-  --color-rule: oklch(0.34 0.012 230);
-  --color-rule-strong: oklch(0.46 0.012 230);
-  --color-ink: oklch(0.95 0.01 230);
-  --color-ink-2: oklch(0.74 0.015 230);
-  --color-act: oklch(0.86 0.13 195);
-  --color-on-act: oklch(0.18 0.03 195);
-  --color-up: oklch(0.82 0.12 150);
-  --color-down: oklch(0.80 0.13 40);
+  --color-canvas: #0a1020;
+  --color-card: #101a30;
+  --color-raised: #15213a;
+  --color-rule: #1f2b48;
+  --color-ink: #eaf0ff;
+  --color-ink-2: #9aa8c8;
+  --color-ink-3: #5a6a90;
+  --color-act: #ffb000;
+  --color-on-act: #231800;
+  --color-flag: #ff6f61;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --color-canvas: oklch(0.97 0.006 230);
-    --color-card: oklch(1 0 0);
-    --color-raised: oklch(0.93 0.008 230);
-    --color-rule: oklch(0.86 0.01 230);
-    --color-rule-strong: oklch(0.70 0.012 230);
-    --color-ink: oklch(0.20 0.015 230);
-    --color-ink-2: oklch(0.46 0.015 230);
-    --color-act: oklch(0.48 0.11 195);
-    --color-on-act: oklch(0.99 0 0);
-    --color-up: oklch(0.52 0.13 150);
-    --color-down: oklch(0.55 0.15 40);
+    --color-canvas: #f2f4fa;
+    --color-card: #ffffff;
+    --color-raised: #e6eaf4;
+    --color-rule: #d3d9e8;
+    --color-ink: #121a2c;
+    --color-ink-2: #4f5c7a;
+    --color-ink-3: #8591ad;
+    --color-act: #a86a00;
+    --color-on-act: #ffffff;
+    --color-flag: #c23b2e;
   }
 }
 
@@ -62,4 +61,5 @@ body {
   color: var(--color-ink);
   font-family: var(--font-ui);
   -webkit-tap-highlight-color: transparent;
+  font-variant-numeric: tabular-nums;
 }

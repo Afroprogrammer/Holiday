@@ -71,7 +71,7 @@ export default function ExerciseCard({
         {exercise.lowerIsBetter ? ' · assistance' : ''}
       </p>
       {slot.options.length > 1 && (
-        <div className="grid grid-cols-2 overflow-hidden rounded-md border border-rule-strong text-center text-sm">
+        <div className="grid grid-cols-2 overflow-hidden rounded-md border border-rule text-center text-sm">
           {slot.options.map((option) => (
             <button
               key={option.id}

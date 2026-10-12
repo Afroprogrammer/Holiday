@@ -69,13 +69,13 @@ export default function RestTimer({ rest, onAdjust, onSkip }) {
         {formatCountdown(remaining)}
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <button type="button" onClick={() => onAdjust(-15)} className="rounded-md border border-rule-strong py-2 font-medium">
+        <button type="button" onClick={() => onAdjust(-15)} className="rounded-md border border-rule py-2 font-medium">
           −15 s
         </button>
-        <button type="button" onClick={() => onAdjust(15)} className="rounded-md border border-rule-strong py-2 font-medium">
+        <button type="button" onClick={() => onAdjust(15)} className="rounded-md border border-rule py-2 font-medium">
           +15 s
         </button>
-        <button type="button" onClick={onSkip} className="rounded-md border border-rule-strong py-2 font-medium">
+        <button type="button" onClick={onSkip} className="rounded-md border border-rule py-2 font-medium">
           Skip
         </button>
       </div>

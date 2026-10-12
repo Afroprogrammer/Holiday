@@ -13,7 +13,7 @@ function NumberRow({ label, value, onChange, suffix }) {
           value={value}
           aria-label={label}
           onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
-          className="w-16 rounded-md border border-rule-strong bg-raised px-2 py-1 text-right font-num text-base font-semibold tabular-nums outline-none"
+          className="w-16 rounded-md border border-rule bg-raised px-2 py-1 text-right font-num text-base font-semibold tabular-nums outline-none"
         />
         <span className="text-sm text-ink-2">{suffix}</span>
       </span>
@@ -42,7 +42,7 @@ export default function ExerciseSettings({ exerciseId }) {
 
       <div className="flex items-center justify-between gap-3 border-b border-rule py-2">
         <span className="text-ink-2">Display unit</span>
-        <div className="grid grid-cols-2 overflow-hidden rounded-md border border-rule-strong text-center text-sm">
+        <div className="grid grid-cols-2 overflow-hidden rounded-md border border-rule text-center text-sm">
           {['kg', 'lb'].map((unit) => (
             <button
               key={unit}

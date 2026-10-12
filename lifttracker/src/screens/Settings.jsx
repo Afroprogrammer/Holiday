@@ -69,7 +69,7 @@ export default function Settings() {
                 await resetCycle(day.id)
                 setChoosingDay(false)
               }}
-              className={`rounded-xl border px-4 py-3 font-medium ${day.id === nextDay?.id ? 'border-act text-act' : 'border-rule-strong'}`}
+              className={`rounded-xl border px-4 py-3 font-medium ${day.id === nextDay?.id ? 'border-act text-act' : 'border-rule'}`}
             >
               {day.name}
             </button>
@@ -79,7 +79,7 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setChoosingDay(true)}
-          className="rounded-xl border border-rule-strong px-4 py-3 text-sm font-medium"
+          className="rounded-xl border border-rule px-4 py-3 text-sm font-medium"
         >
           Reset cycle
         </button>

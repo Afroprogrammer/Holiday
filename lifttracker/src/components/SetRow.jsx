@@ -6,7 +6,7 @@ function Marker({ marker }) {
   if (!marker) return <span />
   const up = marker.kind === 'above'
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] ${up ? 'text-up' : 'text-down'}`}>
+    <span className={`inline-flex items-center gap-1 text-[11px] ${'text-flag'}`}>
       <svg viewBox="0 0 10 10" width="9" height="9" aria-hidden="true">
         <path d={up ? 'M5 1 L9 8 L1 8 Z' : 'M5 9 L9 2 L1 2 Z'} fill="currentColor" />
       </svg>
@@ -61,7 +61,7 @@ function Stepper({ value, onChange, step, label, sub, inputMode }) {
   const num = value === '' ? 0 : Number(value)
   const bump = (delta) => onChange(String(Math.max(0, Math.round((num + delta) * 100) / 100)))
   return (
-    <div className="grid grid-cols-[40px_1fr_40px] overflow-hidden rounded-lg border border-rule-strong bg-raised">
+    <div className="grid grid-cols-[40px_1fr_40px] overflow-hidden rounded-lg border border-rule bg-raised">
       <button type="button" aria-label={`${label} minus`} className="grid place-items-center text-xl leading-none text-ink-2" onClick={() => bump(-step)}>
         −
       </button>

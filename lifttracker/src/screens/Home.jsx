@@ -59,7 +59,7 @@ export default function Home({ onStart }) {
             <button
               key={day.id}
               type="button"
-              className="rounded-xl border border-rule-strong px-4 py-3 font-medium"
+              className="rounded-xl border border-rule px-4 py-3 font-medium"
               onClick={() => onStart?.(day)}
             >
               Start {day.name}
@@ -69,7 +69,7 @@ export default function Home({ onStart }) {
       ) : (
         <button
           type="button"
-          className="rounded-xl border border-rule-strong px-4 py-3 text-sm font-medium"
+          className="rounded-xl border border-rule px-4 py-3 text-sm font-medium"
           onClick={() => setShowOverride(true)}
         >
           Start a different day
