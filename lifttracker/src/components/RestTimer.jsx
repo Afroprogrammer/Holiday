@@ -59,7 +59,7 @@ export default function RestTimer({ rest, onAdjust, onSkip }) {
     <aside
       role="timer"
       aria-live="off"
-      className={`fixed bottom-4 left-1/2 w-[calc(100%-2rem)] max-w-[calc(var(--phone-width)-2rem)] -translate-x-1/2 grid gap-2 rounded-xl border border-act p-3 ${flash ? 'bg-act text-on-act' : 'bg-card'}`}
+      className={`fixed inset-x-4 bottom-4 grid gap-2 rounded-xl border border-act p-3 ${flash ? 'bg-act text-on-act' : 'bg-card'}`}
     >
       <div className="flex items-baseline justify-between text-sm">
         <span className={flash ? '' : 'text-ink-2'}>Rest · {rest.exerciseName}</span>
