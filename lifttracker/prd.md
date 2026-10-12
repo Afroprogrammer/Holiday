@@ -303,6 +303,9 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 11, 2026 | The rest timer sits at the bottom of the workout screen so the open set stays visible above it. |
 | October 12, 2026 | The first iteration targets Android phones. The iOS add-to-home-screen notice is deferred until iOS is in scope. |
 | October 12, 2026 | The app is published to GitHub Pages from `main` by a GitHub Actions workflow. |
+| October 12, 2026 | "Night shift" visual redesign accepted: navy and amber, Oswald and Source Sans 3 self-hosted, animated motion-ghost exercise illustrations (Workout Guide, CC BY-SA 4.0). Phase 1 behaviour unchanged. See `docs/superpowers/specs/2026-10-12-lifttracker-visual-redesign-design.md`. |
+| October 12, 2026 | Exercise settings gained a read-only list of the last five sessions. |
+| October 12, 2026 | With no previous session, set rows prefill from the latest set logged for that exercise today, so a first workout still needs only Done per set. |
 
 ## Open items
 

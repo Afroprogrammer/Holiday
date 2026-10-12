@@ -70,10 +70,14 @@ Phase 1, as specified in `lifttracker/prd.md`:
 Constraints: one-handed, offline, no automatic progression, no AI features.
 Reps may be logged above or below the target range.
 
-Visual direction, accepted by Franklin on October 11, 2026: dark base with one
-cyan action color, a light theme that follows the device setting, Barlow for
-text and Barlow Condensed for numerals. The rest timer sits at the bottom of
-the workout screen. Touch target sizes and the type scale are not yet fixed.
+Visual direction, accepted by Franklin on October 12, 2026 ("Night shift"):
+deep navy base with one amber action colour and coral for out-of-range reps,
+a light theme that follows the device setting, Oswald for display text and
+numerals and Source Sans 3 for text, both self-hosted. Exercise illustrations
+are line-art figures from Workout Guide (CC BY-SA 4.0) shown as an animated
+motion ghost on the workout hero and the rest dock. The rest timer is docked
+to the bottom of the workout screen. Full spec and type scale:
+`docs/superpowers/specs/2026-10-12-lifttracker-visual-redesign-design.md`.
 
 ## Brand Commitments
 
