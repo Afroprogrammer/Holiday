@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import BottomSheet from '../components/BottomSheet.jsx'
 import DaySheet from '../components/DaySheet.jsx'
 import Illustration from '../components/Illustration.jsx'
 import NumberField from '../components/NumberField.jsx'
+import { exportBackup, importBackup } from '../db/backup.js'
+import { backupFilename, parseBackup } from '../lib/backup.js'
+import { formatShortDate } from '../lib/format.js'
 import SettingRow from '../components/SettingRow.jsx'
 import Switch from '../components/Switch.jsx'
 import { getNextProgramDay, getProgramDays } from '../db/queries.js'
@@ -63,6 +66,43 @@ export default function Settings() {
   const [resetting, setResetting] = useState(false)
   const exercisesById = new Map(exercises.map((e) => [e.id, e]))
   const firstDay = days[0]
+  const fileRef = useRef(null)
+  const [exportNote, setExportNote] = useState('')
+  const [pending, setPending] = useState(null) // { data, summary } | { reason } | null
+
+  const doExport = async () => {
+    try {
+      const text = await exportBackup()
+      const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = backupFilename()
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 10_000)
+      setExportNote('')
+    } catch (e) {
+      setExportNote(e.message)
+    }
+  }
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const parsed = parseBackup(await file.text())
+    setPending(parsed.ok ? { data: parsed.data, summary: parsed.summary } : { reason: parsed.reason })
+  }
+
+  const doImport = async () => {
+    try {
+      await importBackup(pending.data)
+      setPending(null)
+    } catch (e) {
+      setPending({ reason: e.message })
+    }
+  }
 
   return (
     <main className="min-h-dvh px-5 pt-3.5 pb-8">
@@ -116,6 +156,19 @@ export default function Settings() {
         Reset cycle to {firstDay?.name ?? 'Push A'}
       </button>
 
+      <Group>Backup</Group>
+      <SettingRow label="Export history" caption={exportNote || 'Saves a file you can import on another phone'} onClick={doExport}>
+        <span aria-hidden="true" className="font-num text-[22px] text-ink-3">
+          ›
+        </span>
+      </SettingRow>
+      <SettingRow label="Import from file" caption="Replaces everything on this phone" onClick={() => fileRef.current?.click()}>
+        <span aria-hidden="true" className="font-num text-[22px] text-ink-3">
+          ›
+        </span>
+      </SettingRow>
+      <input ref={fileRef} type="file" accept="application/json,.json" onChange={onFile} className="hidden" aria-label="Backup file" />
+
       <Group>About</Group>
       <p className="text-[13px] leading-snug text-ink-3">
         Exercise illustrations: Workout Guide and Everkinetic, CC BY-SA 4.0. Fonts: Oswald and Source Sans 3, SIL Open Font License.
@@ -150,6 +203,30 @@ export default function Settings() {
         <button type="button" onClick={() => setResetting(false)} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2">
           Cancel
         </button>
+      </BottomSheet>
+
+      <BottomSheet open={pending !== null} title={pending?.reason ? 'Cannot import' : 'Replace history?'} onClose={() => setPending(null)}>
+        {pending?.reason ? (
+          <>
+            <p className="mt-1 mb-3.5 text-[15px] text-ink-2">{pending.reason}</p>
+            <button type="button" onClick={() => setPending(null)} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2">
+              Close
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 mb-3.5 text-[15px] text-ink-2">
+              {pending?.summary.workouts} workouts and {pending?.summary.sets} sets
+              {pending?.summary.newest ? `, newest ${formatShortDate(pending.summary.newest)}` : ''}. Everything on this phone is replaced.
+            </p>
+            <button type="button" onClick={() => setPending(null)} className="mb-2.5 h-[60px] w-full rounded-2xl bg-act text-lg font-semibold text-on-act">
+              Cancel
+            </button>
+            <button type="button" onClick={doImport} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-flag">
+              Replace
+            </button>
+          </>
+        )}
       </BottomSheet>
     </main>
   )
