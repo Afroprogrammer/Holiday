@@ -20,4 +20,8 @@ describe('update banner placement', () => {
     expect(cfg).toMatch(/registerType: 'prompt'/)
     expect(cfg).toMatch(/injectRegister: false/)
   })
+  it('keeps the manifest id on the deployed base path', () => {
+    const cfg = src('../vite.config.js')
+    expect(cfg).toMatch(/id: process\.env\.BASE_PATH \?\? '\/'/)
+  })
 })

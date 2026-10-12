@@ -189,6 +189,12 @@ export default function Workout({ workoutId, onFinished }) {
       return { ...s, [exerciseId]: next }
     })
 
+  // Backdrop, Escape and "Not now" all mean the same thing: never ask again.
+  const declineNotify = async () => {
+    setAskingNotify(false)
+    await setSetting(SETTING_KEYS.restNotificationAsked, true)
+  }
+
   const nextSlug = rest && activeRow ? active.exercise.illustration : undefined
   const notify = notifyPref !== false && notificationPermission() === 'granted'
   // After this rest the next set is the row that is open now.
@@ -318,7 +324,7 @@ export default function Workout({ workoutId, onFinished }) {
         </button>
       </BottomSheet>
 
-      <BottomSheet open={askingNotify} title="Buzz when a rest ends?" onClose={() => setAskingNotify(false)}>
+      <BottomSheet open={askingNotify} title="Buzz when a rest ends?" onClose={declineNotify}>
         <p className="mt-1 mb-3.5 text-[15px] text-ink-2">Only used when you leave the app during a rest.</p>
         <button
           type="button"
@@ -331,14 +337,7 @@ export default function Workout({ workoutId, onFinished }) {
         >
           Allow
         </button>
-        <button
-          type="button"
-          onClick={async () => {
-            await setSetting(SETTING_KEYS.restNotificationAsked, true)
-            setAskingNotify(false)
-          }}
-          className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2"
-        >
+        <button type="button" onClick={declineNotify} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2">
           Not now
         </button>
       </BottomSheet>

@@ -91,8 +91,12 @@ export default function Settings() {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    const parsed = parseBackup(await file.text())
-    setPending(parsed.ok ? { data: parsed.data, summary: parsed.summary } : { reason: parsed.reason })
+    try {
+      const parsed = parseBackup(await file.text())
+      setPending(parsed.ok ? { data: parsed.data, summary: parsed.summary } : { reason: parsed.reason })
+    } catch {
+      setPending({ reason: 'The file could not be read.' })
+    }
   }
 
   const doImport = async () => {

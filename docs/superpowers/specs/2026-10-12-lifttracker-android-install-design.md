@@ -180,7 +180,9 @@ Settings gains a group "Backup":
 
 In `vite.config.js` manifest:
 
-- `id: '/'` relative to base (becomes `/Holiday/` on Pages).
+- `id` set to the absolute deployed path (`process.env.BASE_PATH ?? '/'`, so
+  `/Holiday/` on Pages). A relative id would resolve against the origin and
+  change the installed app's identity.
 - `scope: '.'`.
 - `description` kept.
 - `screenshots`: two PNGs in `public/`, `screenshot-home.png` and
@@ -270,3 +272,10 @@ Dexie schema stays at version 1. No new tables.
    Finish.
 5. Export, uninstall, reinstall, import: history, cycle position and
    settings are back.
+
+## 8. Rollout note
+
+The switch from `autoUpdate` to `prompt` registration only takes effect once
+the old worker has been replaced. After the first deploy from this branch,
+close the installed app fully once (swipe it away) and reopen it. Done
+criterion 4 can only be checked from the second deploy onwards.

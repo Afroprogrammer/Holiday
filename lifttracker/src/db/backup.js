@@ -1,5 +1,6 @@
 import { db } from './db.js'
 import { exercises as seededExercises } from './program.js'
+import { seedIfEmpty } from './seed.js'
 import { serializeBackup } from '../lib/backup.js'
 
 const ACTIVE = 'Finish the active workout first.'
@@ -35,4 +36,6 @@ export async function importBackup(data, database = db) {
     await database.sets.bulkAdd(data.sets)
     await database.settings.bulkAdd(data.settings)
   })
+  // Settings keys added since the backup was made get their defaults.
+  await seedIfEmpty(database)
 }

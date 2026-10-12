@@ -31,6 +31,16 @@ describe('parseBackup', () => {
     expect(r.summary).toEqual({ workouts: 1, sets: 1, newest: '2026-10-09T11:00:00Z' })
     expect(r.data.settings.find((s) => s.key === 'someFutureKey').value).toBe(1)
   })
+  it('refuses null entries, bad versions, and an empty exercise table without throwing', () => {
+    const base = JSON.parse(serializeBackup(tables))
+    expect(parseBackup(JSON.stringify({ ...base, workouts: [null] })).reason).toBe('The file is damaged (missing workout fields).')
+    expect(parseBackup(JSON.stringify({ ...base, sets: [42] })).reason).toBe('The file is damaged (missing set fields).')
+    expect(parseBackup(JSON.stringify({ ...base, version: '1' })).reason).toBe('Not a LiftTracker backup.')
+    expect(parseBackup(JSON.stringify({ ...base, version: 0 })).reason).toBe('Not a LiftTracker backup.')
+    expect(parseBackup(JSON.stringify({ ...base, exercises: [] })).reason).toBe('The file is damaged (no exercises).')
+    expect(parseBackup(JSON.stringify({ ...base, exercises: [{ name: 'no id' }] })).reason).toBe('The file is damaged (no exercises).')
+  })
+
   it('refuses junk, other apps, newer versions, and damaged sets', () => {
     expect(parseBackup('{').reason).toBe('Not a LiftTracker backup.')
     expect(parseBackup(JSON.stringify({ app: 'other', version: 1 })).reason).toBe('Not a LiftTracker backup.')

@@ -56,4 +56,12 @@ describe('backup round trip', () => {
     await expect(importBackup(parsed.data, b)).rejects.toThrow('Finish the active workout first.')
     expect(await b.workouts.count()).toBe(1)
   })
+
+  it('backfills settings keys missing from an old backup after import', async () => {
+    const parsed = parseBackup(await exportBackup(a))
+    parsed.data.settings = parsed.data.settings.filter((s) => s.key !== 'restNotificationAsked')
+    await importBackup(parsed.data, b)
+    expect((await b.settings.get('restNotificationAsked')).value).toBe(false)
+    expect((await b.settings.get('nextProgramDayId')).value).toBe('pull-a')
+  })
 })

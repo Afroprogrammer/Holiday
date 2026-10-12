@@ -22,7 +22,9 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         start_url: '.',
-        id: './',
+        // The id must be the absolute deployed path, or Chrome treats a
+        // Pages install under /Holiday/ as a different app.
+        id: process.env.BASE_PATH ?? '/',
         scope: './',
         categories: ['health', 'fitness'],
         screenshots: [
