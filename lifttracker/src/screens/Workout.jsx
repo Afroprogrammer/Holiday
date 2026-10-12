@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import ExerciseCard from '../components/ExerciseCard.jsx'
-import { finishWorkout, getWorkoutView, logSet, setDisplayUnit } from '../db/workouts.js'
+import RestTimer from '../components/RestTimer.jsx'
+import { finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit } from '../db/workouts.js'
+import { adjustRest, startRest } from '../lib/timer.js'
 import { otherUnit } from '../lib/units.js'
 import { formatClockTime } from '../lib/format.js'
 
@@ -23,11 +25,12 @@ function defaultExerciseId(slot, loggedSets) {
 
 export default function Workout({ workoutId, onFinished }) {
   const view = useLiveQuery(() => getWorkoutView(workoutId), [workoutId])
+  const rest = useLiveQuery(getActiveRest)
   const [chosen, setChosen] = useState({})
   const [skipped, setSkipped] = useState({})
   const [extra, setExtra] = useState({})
 
-  if (view === undefined) return null
+  if (view === undefined || rest === undefined) return null
   if (view === null) return null
   const { workout, day, slots, loggedSets } = view
 
@@ -49,12 +52,13 @@ export default function Workout({ workoutId, onFinished }) {
       const ok = window.confirm(`${remaining} ${remaining === 1 ? 'set remains' : 'sets remain'}. Finish anyway?`)
       if (!ok) return
     }
+    await saveActiveRest(null)
     await finishWorkout(workout.id)
     onFinished?.()
   }
 
   return (
-    <main className="flex min-h-dvh flex-col gap-3 p-4">
+    <main className={`flex min-h-dvh flex-col gap-3 p-4 ${rest ? 'pb-44' : ''}`}>
       <header className="flex items-baseline justify-between">
         <span className="font-num text-2xl font-semibold">{day.name}</span>
         <span className="text-ink-2">Started {formatClockTime(workout.startedAt)}</span>
@@ -73,9 +77,13 @@ export default function Workout({ workoutId, onFinished }) {
             extraSets={extra[exercise.id] ?? 0}
             onSelectAlternative={(id) => setChosen((c) => ({ ...c, [index]: id }))}
             onFlipUnit={() => setDisplayUnit(exercise.id, otherUnit(exercise.displayUnit))}
-            onDone={(setNumber, values) =>
-              logSet({ workoutId: workout.id, exerciseId: exercise.id, setNumber, ...values })
-            }
+            onDone={async (setNumber, values) => {
+              await logSet({ workoutId: workout.id, exerciseId: exercise.id, setNumber, ...values })
+              // The timer starts automatically when a set is marked done.
+              await saveActiveRest(
+                startRest({ exerciseId: exercise.id, exerciseName: exercise.name, restSeconds: exercise.restSeconds }),
+              )
+            }}
             onSkip={(setNumber) =>
               setSkipped((s) => ({ ...s, [exercise.id]: new Set([...(s[exercise.id] ?? []), setNumber]) }))
             }
@@ -91,6 +99,14 @@ export default function Workout({ workoutId, onFinished }) {
       >
         Finish
       </button>
+
+      {rest && (
+        <RestTimer
+          rest={rest}
+          onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))}
+          onSkip={() => saveActiveRest(null)}
+        />
+      )}
     </main>
   )
 }
