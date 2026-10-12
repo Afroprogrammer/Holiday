@@ -306,6 +306,7 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 12, 2026 | "Night shift" visual redesign accepted: navy and amber, Oswald and Source Sans 3 self-hosted, animated motion-ghost exercise illustrations (Workout Guide, CC BY-SA 4.0). Phase 1 behaviour unchanged. See `docs/superpowers/specs/2026-10-12-lifttracker-visual-redesign-design.md`. |
 | October 12, 2026 | Exercise settings gained a read-only list of the last five sessions. |
 | October 12, 2026 | With no previous session, set rows prefill from the latest set logged for that exercise today, so a first workout still needs only Done per set. |
+| October 12, 2026 | Android install work accepted: wake lock, background rest notification, in-app install, update banner on Home only, JSON backup. No iOS work. See `docs/superpowers/specs/2026-10-12-lifttracker-android-install-design.md`. |
 
 ## Open items
 

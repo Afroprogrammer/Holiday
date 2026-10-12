@@ -65,6 +65,9 @@ Phase 1, as specified in `lifttracker/prd.md`:
   stored exactly as entered, with its unit.
 - The active workout is saved as you go and resumes when you return.
 - Settings: default rest durations, per-exercise overrides, reset cycle.
+- Android install support: the screen stays on during a workout, a rest that
+  ends while the app is in the background raises a notification, Home offers
+  Install and Update, and Settings exports and imports history as a JSON file.
 - Local storage only. No accounts, no sync, no charts in Phase 1.
 
 Constraints: one-handed, offline, no automatic progression, no AI features.
