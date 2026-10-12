@@ -13,7 +13,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'icon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'LiftTracker',
         short_name: 'LiftTracker',
@@ -23,13 +23,18 @@ export default defineConfig({
         start_url: '.',
         background_color: '#1a1e22',
         theme_color: '#1a1e22',
+        // Chrome on Android only offers "Install app" when a PNG icon of at
+        // least 192 px is listed; the SVG alone does not qualify.
         icons: [
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
       },
       workbox: {
         // Cache the app shell so the app opens with no connection.
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       },
     }),
   ],
