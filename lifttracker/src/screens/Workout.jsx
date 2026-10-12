@@ -4,10 +4,12 @@ import BottomSheet from '../components/BottomSheet.jsx'
 import Illustration from '../components/Illustration.jsx'
 import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
 import Stepper from '../components/Stepper.jsx'
+import { getSetting, SETTING_KEYS } from '../db/settings.js'
 import { finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit } from '../db/workouts.js'
 import { formatSession } from '../lib/history.js'
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
+import { useWakeLock } from '../lib/wakeLock.js'
 import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, shortName } from '../lib/workoutProgress.js'
 
 // Picks which alternative a slot shows today: the one already logged in this
@@ -135,6 +137,8 @@ function SetRows({ plan, onSkip, onUnskip, onAddSet }) {
 export default function Workout({ workoutId, onFinished }) {
   const view = useLiveQuery(() => getWorkoutView(workoutId), [workoutId])
   const rest = useLiveQuery(getActiveRest)
+  const keepScreenOn = useLiveQuery(() => getSetting(SETTING_KEYS.keepScreenOn))
+  useWakeLock(keepScreenOn !== false)
   const now = useTicker(1000)
   const [chosen, setChosen] = useState({})
   const [skipped, setSkipped] = useState({})

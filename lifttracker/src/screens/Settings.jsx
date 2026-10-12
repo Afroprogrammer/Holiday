@@ -4,8 +4,10 @@ import BottomSheet from '../components/BottomSheet.jsx'
 import DaySheet from '../components/DaySheet.jsx'
 import Illustration from '../components/Illustration.jsx'
 import NumberField from '../components/NumberField.jsx'
+import SettingRow from '../components/SettingRow.jsx'
+import Switch from '../components/Switch.jsx'
 import { getNextProgramDay, getProgramDays } from '../db/queries.js'
-import { DEFAULT_REST_KEYS, getExercisesByName, getSetting, resetCycle, setSetting } from '../db/settings.js'
+import { DEFAULT_REST_KEYS, SETTING_KEYS, getExercisesByName, getSetting, resetCycle, setSetting } from '../db/settings.js'
 
 function Group({ children }) {
   return <h2 className="mt-6 mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-3">{children}</h2>
@@ -15,6 +17,16 @@ function DefaultRest({ label, caption, settingKey }) {
   const stored = useLiveQuery(() => getSetting(settingKey), [settingKey])
   if (stored === undefined) return null
   return <NumberField label={label} caption={caption} value={String(stored)} suffix="s" onChange={(v) => setSetting(settingKey, v === '' ? 0 : Number(v))} />
+}
+
+function BoolSetting({ settingKey, label, caption, disabled = false, disabledCaption }) {
+  const stored = useLiveQuery(() => getSetting(settingKey), [settingKey])
+  if (stored === undefined) return null
+  return (
+    <SettingRow label={label} caption={disabled ? disabledCaption : caption}>
+      <Switch checked={Boolean(stored)} disabled={disabled} onChange={(v) => setSetting(settingKey, v)} label={label} />
+    </SettingRow>
+  )
 }
 
 // Settings (prd.md, "Settings"): default rest, per-exercise overrides behind
@@ -59,6 +71,9 @@ export default function Settings() {
           </li>
         ))}
       </ul>
+
+      <Group>Workout</Group>
+      <BoolSetting settingKey={SETTING_KEYS.keepScreenOn} label="Keep screen on during workout" caption="while the workout screen is open" />
 
       <Group>Program</Group>
       <button type="button" onClick={() => setPicking(true)} className="flex min-h-14 w-full items-center gap-3 border-b border-rule py-2 text-left">
