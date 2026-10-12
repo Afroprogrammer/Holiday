@@ -63,3 +63,53 @@ body {
   -webkit-tap-highlight-color: transparent;
   font-variant-numeric: tabular-nums;
 }
+
+/* Motion ghost: three stacked masked layers. Static: frame 2 on top at full
+   opacity, frame 3 behind at 45 %, frame 1 at 18 %. Live: the figure performs
+   the movement 1 → 2 → 3 → 2 → 1 over 2.6 s and each pose leaves a trail.
+   Layer order in the DOM is 1, 3, 2 (see Illustration.jsx). */
+.ill {
+  position: relative;
+  display: inline-block;
+  flex: none;
+}
+.ill i {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--mm) center / contain no-repeat;
+  mask: var(--mm) center / contain no-repeat;
+}
+.ill i:nth-child(1) { opacity: 0.18; }
+.ill i:nth-child(2) { opacity: 0.45; }
+.ill i:nth-child(3) { opacity: 1; }
+
+.ill.live i {
+  animation-duration: 2.6s;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  animation-iteration-count: infinite;
+}
+.ill.live i:nth-child(1) { animation-name: ill-pose-1; }
+.ill.live i:nth-child(2) { animation-name: ill-pose-3; }
+.ill.live i:nth-child(3) { animation-name: ill-pose-2; }
+.ill.live::after {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-act) 22%, transparent), transparent 70%);
+  animation: ill-pulse 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.ill.live.glow i:nth-child(3) {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-act) 70%, transparent));
+}
+
+@keyframes ill-pose-1 { 0% { opacity: 1 } 25% { opacity: 0.14 } 50% { opacity: 0.08 } 75% { opacity: 0.14 } 100% { opacity: 1 } }
+@keyframes ill-pose-2 { 0% { opacity: 0.14 } 25% { opacity: 1 } 50% { opacity: 0.16 } 75% { opacity: 1 } 100% { opacity: 0.14 } }
+@keyframes ill-pose-3 { 0% { opacity: 0.08 } 25% { opacity: 0.14 } 50% { opacity: 1 } 75% { opacity: 0.14 } 100% { opacity: 0.08 } }
+@keyframes ill-pulse { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ill.live i { animation: none; }
+  .ill.live::after { display: none; }
+}
