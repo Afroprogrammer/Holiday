@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Oswald";
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("/fonts/oswald.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/fonts/source-sans-3.woff2") format("woff2");
+}
+
 /* Design tokens from the accepted wireframe: dark base for the gym floor,
    one cyan action color, Barlow for text and Barlow Condensed for numerals.
    Light theme follows the device setting. */
