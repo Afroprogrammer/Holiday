@@ -76,3 +76,15 @@ export async function getWorkoutView(workoutId) {
   }
   return { workout, day, slots, loggedSets }
 }
+
+// The running rest, kept in settings as its end timestamp so it survives
+// the screen locking or the app being reopened (prd.md, "Rest timer").
+export async function getActiveRest() {
+  const row = await db.settings.get('activeRest')
+  return row?.value ?? null
+}
+
+export async function saveActiveRest(rest) {
+  if (rest) await db.settings.put({ key: 'activeRest', value: rest })
+  else await db.settings.delete('activeRest')
+}
