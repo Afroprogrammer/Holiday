@@ -4,6 +4,7 @@
    one cyan action color, Barlow for text and Barlow Condensed for numerals.
    Light theme follows the device setting. */
 @theme {
+  --phone-width: 430px;
   --font-ui: "Barlow", "Helvetica Neue", Arial, sans-serif;
   --font-num: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
 
@@ -47,4 +48,18 @@ body {
   color: var(--color-ink);
   font-family: var(--font-ui);
   -webkit-tap-highlight-color: transparent;
+}
+
+/* The spec describes a phone. On wider screens the app sits in a centered
+   phone-width column on the same canvas, so nothing stretches. */
+#root {
+  max-width: var(--phone-width);
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+
+@media (min-width: 480px) {
+  #root {
+    border-inline: 1px solid var(--color-rule);
+  }
 }

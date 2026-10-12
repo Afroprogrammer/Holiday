@@ -303,6 +303,7 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 11, 2026 | The rest timer sits at the bottom of the workout screen so the open set stays visible above it. |
 | October 12, 2026 | The first iteration targets Android phones. The iOS add-to-home-screen notice is deferred until iOS is in scope. |
 | October 12, 2026 | The app is published to GitHub Pages from `main` by a GitHub Actions workflow. |
+| October 12, 2026 | On screens wider than a phone, the app is centered in a phone-width column (430 px). Phones are unaffected. |
 
 ## Open items
 
