@@ -20,7 +20,7 @@ export default function Stepper({ value, onChange, step, size, unit, onFlipUnit,
             value={value}
             onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
             size={Math.max(1, value.length)}
-            className={`w-auto min-w-[1ch] bg-transparent text-center font-num font-bold leading-none tracking-tight outline-none ${valueClass}`}
+            className={`m-0 h-[1em] w-auto min-w-[3ch] bg-transparent p-0 text-center font-num font-bold leading-none tracking-tight outline-none ${valueClass}`}
           />
           {unit &&
             (onFlipUnit ? (
@@ -31,7 +31,7 @@ export default function Stepper({ value, onChange, step, size, unit, onFlipUnit,
               <span className="ml-1.5 font-num text-[22px] font-semibold text-act">{unit}</span>
             ))}
         </div>
-        {caption && <span className="mt-0.5 text-[13px] font-medium text-ink-3">{caption}</span>}
+        {caption && <span className="mt-1 text-[13px] leading-none font-medium text-ink-3">{caption}</span>}
       </div>
       <button type="button" aria-label={`${label} plus`} onClick={() => bump(step)} className="border-l border-rule font-num text-[40px] leading-none text-ink-2">
         +
