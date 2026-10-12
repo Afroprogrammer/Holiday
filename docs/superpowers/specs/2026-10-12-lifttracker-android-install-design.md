@@ -124,8 +124,9 @@ No iOS hint sheet.
 
 ### 3.4 Update banner, never mid-workout
 
-`vite.config.js` switches `registerType` to `'prompt'`. `src/main.jsx` no
-longer auto-registers; `src/lib/update.js` exports `useAppUpdate()` built
+`vite.config.js` switches `registerType` to `'prompt'` and sets
+`injectRegister: false`, so the plugin no longer injects its own
+registration script. `src/lib/update.js` exports `useAppUpdate()` built
 on `useRegisterSW` from `virtual:pwa-register/react`, exposing
 `{ ready: boolean, apply: () => void }`.
 
@@ -240,9 +241,8 @@ Changed:
 - `src/screens/Home.jsx`: Install row, Update banner.
 - `src/screens/Settings.jsx`: "Workout" group (two switches), "Backup"
   group.
-- `src/main.jsx`: remove the implicit auto registration (the `prompt` mode
-  registers through the hook).
-- `vite.config.js`: `registerType: 'prompt'`, `workbox.importScripts`,
+- `vite.config.js`: `registerType: 'prompt'`, `injectRegister: false`,
+  `workbox.importScripts`,
   manifest fields, screenshots.
 - `index.html`: no change.
 
