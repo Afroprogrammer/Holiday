@@ -35,6 +35,8 @@ describe('RestDock', () => {
     act(() => vi.advanceTimersByTime(2_250))
     expect(dock().className).toContain('bg-act')
     act(() => vi.advanceTimersByTime(2_000))
+    expect(dock().className).toContain('bg-act')
+    act(() => vi.advanceTimersByTime(1_000))
     expect(dock().className).not.toContain('bg-act')
     expect(screen.getByRole('timer').className).toContain('text-flag')
     rerender(<RestDock rest={null} nextSlug="deadlift" onAdjust={() => {}} onSkip={() => {}} />)
@@ -57,7 +59,7 @@ describe('RestDock', () => {
     vi.useRealTimers()
   })
 
-  it('raises a notification at zero only while hidden and allowed', async () => {
+  it('raises a notification at zero whenever allowed, hidden or not', async () => {
     vi.useFakeTimers()
     const now = 1_000_000
     vi.setSystemTime(now)
@@ -76,6 +78,15 @@ describe('RestDock', () => {
     Object.defineProperty(document, 'hidden', { value: false, configurable: true })
     const second = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, Date.now())
     rerender(<RestDock rest={second} nextSlug="deadlift" nextSet={next} notify onAdjust={() => {}} onSkip={() => {}} />)
+    await act(async () => {
+      vi.advanceTimersByTime(2_250)
+    })
+    await act(async () => {})
+    expect(showNotification).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('timer').closest('aside').className).toContain('bg-act')
+    showNotification.mockClear()
+    const third = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, Date.now())
+    rerender(<RestDock rest={third} nextSlug="deadlift" nextSet={next} notify={false} onAdjust={() => {}} onSkip={() => {}} />)
     await act(async () => {
       vi.advanceTimersByTime(2_250)
     })

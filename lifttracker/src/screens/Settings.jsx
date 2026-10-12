@@ -11,7 +11,7 @@ import SettingRow from '../components/SettingRow.jsx'
 import Switch from '../components/Switch.jsx'
 import { getNextProgramDay, getProgramDays } from '../db/queries.js'
 import { DEFAULT_REST_KEYS, SETTING_KEYS, getExercisesByName, getSetting, resetCycle, setSetting } from '../db/settings.js'
-import { notificationPermission, requestNotificationPermission } from '../lib/restNotification.js'
+import { getRegistration, notificationPermission, requestNotificationPermission, testBuzz } from '../lib/restNotification.js'
 
 function Group({ children }) {
   return <h2 className="mt-6 mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-3">{children}</h2>
@@ -143,6 +143,11 @@ export default function Settings() {
       <Group>Workout</Group>
       <BoolSetting settingKey={SETTING_KEYS.keepScreenOn} label="Keep screen on during workout" caption="while the workout screen is open" />
       <NotifySetting />
+      <SettingRow label="Test buzz" caption="vibrates and beeps now, like the end of a rest" onClick={async () => testBuzz(await getRegistration())}>
+        <span aria-hidden="true" className="font-num text-[22px] text-ink-3">
+          ›
+        </span>
+      </SettingRow>
 
       <Group>Program</Group>
       <button type="button" onClick={() => setPicking(true)} className="flex min-h-14 w-full items-center gap-3 border-b border-rule py-2 text-left">

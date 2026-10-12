@@ -1,35 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Illustration from './Illustration.jsx'
-import { getRegistration, showRestNotification } from '../lib/restNotification.js'
+import { FLASH_MS, getRegistration, showRestNotification, signalRestOver } from '../lib/restNotification.js'
 import { formatCountdown, progressFraction, remainingSeconds } from '../lib/timer.js'
 
 export const DOCK_HEIGHT = { idle: 76, resting: 236 }
-
-// At zero the device vibrates if it can. Vibration isn't available on iOS web
-// apps, so the dock also flashes and plays a short tone if audio is allowed
-// (prd.md, "Risks and mitigations").
-function signalRestOver() {
-  try {
-    navigator.vibrate?.(300)
-  } catch {
-    // Not supported; the flash and tone still run.
-  }
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext
-    if (!Ctx) return
-    const ctx = new Ctx()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.frequency.value = 880
-    gain.gain.value = 0.2
-    osc.connect(gain).connect(ctx.destination)
-    osc.start()
-    osc.stop(ctx.currentTime + 0.25)
-    osc.onended = () => ctx.close()
-  } catch {
-    // Audio blocked until the user interacts; nothing else to do.
-  }
-}
 
 function useNow(active) {
   const [now, setNow] = useState(() => Date.now())
@@ -58,23 +32,23 @@ export default function RestDock({ rest, nextSlug, nextSet = null, notify = fals
   // late) shows overtime without flashing or beeping again.
   const firedFor = useRef(rest && remaining <= 0 ? rest.endsAt : null)
 
-  // Fire once when the countdown crosses zero while mounted. In the
-  // background the system notification stands in for the flash and tone.
+  // Fire once when the countdown crosses zero while mounted. The system
+  // notification goes out whenever it is allowed, foreground included:
+  // Android vibrates it reliably, while in-page vibrate and audio are
+  // dropped by Chrome once the last tap is stale. The flash and beeps run
+  // as well so the dock itself shows the moment.
   useEffect(() => {
     if (!rest || remaining > 0 || firedFor.current === rest.endsAt) return
     firedFor.current = rest.endsAt
-    if (notify && document.hidden) {
-      getRegistration().then((registration) => showRestNotification(registration, rest, nextSet))
-      return
-    }
+    if (notify) getRegistration().then((registration) => showRestNotification(registration, rest, nextSet))
     signalRestOver()
     setFlash(true)
   }, [rest, remaining, notify, nextSet])
 
-  // The flash clears itself 1.2 s later, independent of the countdown ticking.
+  // The flash clears itself later, independent of the countdown ticking.
   useEffect(() => {
     if (!flash) return undefined
-    const id = setTimeout(() => setFlash(false), 1200)
+    const id = setTimeout(() => setFlash(false), FLASH_MS)
     return () => clearTimeout(id)
   }, [flash])
 
