@@ -47,6 +47,22 @@ describe('buildPlan', () => {
     expect(plan.exercises[0].rows[0].prefill).toEqual({ weight: 60, unit: 'kg', reps: 8 })
   })
 
+  it('keeps the "last" value to real history even when prefill falls back to today', () => {
+    const plan = buildPlan(entries, [logged(dips.id, 1, 10, 0)], {}, {})
+    expect(plan.exercises[1].rows[1].last).toBeNull()
+    expect(plan.exercises[1].rows[1].prefill).toEqual({ weight: 0, unit: 'kg', reps: 10 })
+    expect(plan.exercises[0].rows[0].last).toEqual({ weight: 60, unit: 'kg', reps: 8 })
+  })
+
+  it('keeps sets logged beyond the target after the app is reopened', () => {
+    const sets = [1, 2, 3, 4, 5].map((n) => logged(bench.id, n))
+    const plan = buildPlan(entries, sets, {}, {})
+    expect(plan.exercises[0].total).toBe(5)
+    expect(plan.exercises[0].rows).toHaveLength(5)
+    expect(plan.done).toBe(5)
+    expect(plan.total).toBe(11)
+  })
+
   it('marks logged sets, flags reps outside the range, and moves the open set on', () => {
     const plan = buildPlan(entries, [logged(bench.id, 1, 8), logged(bench.id, 2, 9)], {}, {})
     const rows = plan.exercises[0].rows

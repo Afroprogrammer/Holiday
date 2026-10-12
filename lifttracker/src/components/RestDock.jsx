@@ -57,14 +57,25 @@ export default function RestDock({ rest, nextSlug, onAdjust, onSkip }) {
   // late) shows overtime without flashing or beeping again.
   const firedFor = useRef(rest && remaining <= 0 ? rest.endsAt : null)
 
+  // Fire once when the countdown crosses zero while mounted.
   useEffect(() => {
-    if (!rest || remaining > 0 || firedFor.current === rest.endsAt) return undefined
+    if (!rest || remaining > 0 || firedFor.current === rest.endsAt) return
     firedFor.current = rest.endsAt
     signalRestOver()
     setFlash(true)
+  }, [rest, remaining])
+
+  // The flash clears itself 1.2 s later, independent of the countdown ticking.
+  useEffect(() => {
+    if (!flash) return undefined
     const id = setTimeout(() => setFlash(false), 1200)
     return () => clearTimeout(id)
-  }, [rest, remaining])
+  }, [flash])
+
+  // A new rest starts clean.
+  useEffect(() => {
+    setFlash(false)
+  }, [rest?.endsAt])
 
   const shell = 'fixed inset-x-0 bottom-0 z-10 border-t border-rule px-5 pb-[calc(18px+env(safe-area-inset-bottom,0px))] pt-3'
 

@@ -23,7 +23,7 @@ export default function Home({ onStart }) {
       <div className="flex-1 px-5 pt-3.5">
         <header className="flex h-11 items-center justify-between">
           <span className="font-num text-lg font-bold uppercase tracking-wide">LiftTracker</span>
-          <a href="#settings" className="font-semibold text-act">
+          <a href="#settings" className="inline-flex h-11 items-center font-semibold text-act">
             Settings
           </a>
         </header>

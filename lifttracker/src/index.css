@@ -29,7 +29,7 @@
   --color-rule: #1f2b48;
   --color-ink: #eaf0ff;
   --color-ink-2: #9aa8c8;
-  --color-ink-3: #5a6a90;
+  --color-ink-3: #7a8ab0;
   --color-act: #ffb000;
   --color-on-act: #231800;
   --color-flag: #ff6f61;
@@ -43,8 +43,8 @@
     --color-rule: #d3d9e8;
     --color-ink: #121a2c;
     --color-ink-2: #4f5c7a;
-    --color-ink-3: #8591ad;
-    --color-act: #a86a00;
+    --color-ink-3: #606c89;
+    --color-act: #8f5a00;
     --color-on-act: #ffffff;
     --color-flag: #c23b2e;
   }

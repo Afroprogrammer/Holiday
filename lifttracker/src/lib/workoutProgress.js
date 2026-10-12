@@ -7,19 +7,23 @@ import { convertWeight } from './units.js'
 
 export function buildPlan(entries, loggedSets, skipped, extra, focusExerciseId = null) {
   const exercises = entries.map(({ exercise, slot, previousSets }) => {
-    const total = slot.targetSets + (extra[exercise.id] ?? 0)
     const skippedSet = skipped[exercise.id] ?? new Set()
-    // With no previous session, the latest set logged for this exercise
-    // today stands in, so a first workout still needs only Done per set.
     const own = loggedSets.filter((s) => s.exerciseId === exercise.id).sort((a, b) => a.setNumber - b.setNumber)
+    // Added sets live in screen state, so after the app is reopened the
+    // logged set numbers decide how many rows exist.
+    const total = Math.max(slot.targetSets + (extra[exercise.id] ?? 0), own.at(-1)?.setNumber ?? 0)
+    // With no previous session, the latest set logged for this exercise
+    // today stands in as the prefill, so a first workout still needs only
+    // Done per set. `last` stays strictly previous-session history.
     const todayFallback = own.length > 0 ? { weight: own.at(-1).weight, unit: own.at(-1).unit, reps: own.at(-1).reps } : null
     const rows = []
     for (let n = 1; n <= total; n += 1) {
       const set = loggedSets.find((s) => s.exerciseId === exercise.id && s.setNumber === n)
-      const prefill = prefillForSet(previousSets, n) ?? todayFallback
-      if (set) rows.push({ n, status: 'logged', set, prefill, marker: rangeMarker(set.reps, slot.repMin, slot.repMax) })
-      else if (skippedSet.has(n)) rows.push({ n, status: 'skipped', prefill })
-      else rows.push({ n, status: 'pending', prefill })
+      const last = prefillForSet(previousSets, n)
+      const prefill = last ?? todayFallback
+      if (set) rows.push({ n, status: 'logged', set, prefill, last, marker: rangeMarker(set.reps, slot.repMin, slot.repMax) })
+      else if (skippedSet.has(n)) rows.push({ n, status: 'skipped', prefill, last })
+      else rows.push({ n, status: 'pending', prefill, last })
     }
     const remaining = rows.filter((r) => r.status === 'pending').length
     return { exercise, slot, total, remaining, rows }

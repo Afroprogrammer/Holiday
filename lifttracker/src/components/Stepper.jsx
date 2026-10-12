@@ -24,7 +24,7 @@ export default function Stepper({ value, onChange, step, size, unit, onFlipUnit,
           />
           {unit &&
             (onFlipUnit ? (
-              <button type="button" onClick={onFlipUnit} aria-label={`Unit ${unit}, tap to switch`} className="ml-1.5 font-num text-[22px] font-semibold text-act">
+              <button type="button" onClick={onFlipUnit} aria-label={`Unit ${unit}, tap to switch`} className="ml-1.5 inline-flex min-h-11 min-w-11 items-center justify-center font-num text-[22px] font-semibold text-act">
                 {unit}
               </button>
             ) : (

@@ -31,7 +31,7 @@ export default function ExerciseSettings({ exerciseId }) {
   return (
     <main className="min-h-dvh px-5 pt-3.5 pb-8">
       <header className="flex h-11 items-center">
-        <a href="#settings" className="font-semibold text-act">
+        <a href="#settings" className="inline-flex h-11 items-center font-semibold text-act">
           ‹ Settings
         </a>
       </header>

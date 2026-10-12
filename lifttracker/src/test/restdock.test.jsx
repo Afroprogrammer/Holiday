@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 afterEach(cleanup)
@@ -22,6 +22,25 @@ describe('RestDock', () => {
     expect(screen.getByRole('timer').textContent).toContain('1:30')
     expect(screen.getByText('of 1:30')).toBeTruthy()
     expect(document.querySelector('.ill.live.glow')).toBeTruthy()
+    vi.useRealTimers()
+  })
+
+  it('flashes once at zero, clears, and does not carry into the next rest', () => {
+    vi.useFakeTimers()
+    const now = 1_000_000
+    vi.setSystemTime(now)
+    const rest = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, now)
+    const { rerender } = render(<RestDock rest={rest} nextSlug="deadlift" onAdjust={() => {}} onSkip={() => {}} />)
+    const dock = () => screen.getByRole('timer').closest('aside')
+    act(() => vi.advanceTimersByTime(2_250))
+    expect(dock().className).toContain('bg-act')
+    act(() => vi.advanceTimersByTime(2_000))
+    expect(dock().className).not.toContain('bg-act')
+    expect(screen.getByRole('timer').className).toContain('text-flag')
+    rerender(<RestDock rest={null} nextSlug="deadlift" onAdjust={() => {}} onSkip={() => {}} />)
+    const second = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 90 }, Date.now())
+    rerender(<RestDock rest={second} nextSlug="deadlift" onAdjust={() => {}} onSkip={() => {}} />)
+    expect(dock().className).not.toContain('bg-act')
     vi.useRealTimers()
   })
 

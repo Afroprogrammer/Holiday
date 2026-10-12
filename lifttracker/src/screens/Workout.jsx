@@ -58,7 +58,7 @@ export function ActiveSet({ exercise, row, total, targetText, onDone, onFlipUnit
           Set {row.n} <span className="font-semibold text-ink-3">of {total}</span>
         </h3>
         <p className="text-[15px] text-ink-2">
-          last <b className="font-num text-[17px] font-semibold text-ink">{lastTimeText(row.prefill, unit)}</b>
+          last <b className="font-num text-[17px] font-semibold text-ink">{lastTimeText(row.last, unit)}</b>
         </p>
       </div>
       <div className="mt-3">
@@ -114,7 +114,7 @@ function SetRows({ plan, onSkip, onUnskip, onAddSet }) {
           )}
           {r.status === 'pending' && (
             <>
-              <span>last {lastTimeText(r.prefill, plan.exercise.displayUnit)}</span>
+              <span>last {lastTimeText(r.last, plan.exercise.displayUnit)}</span>
               <button type="button" onClick={() => onSkip(r.n)} className="ml-auto h-11 px-2 font-semibold text-act">
                 Skip
               </button>
