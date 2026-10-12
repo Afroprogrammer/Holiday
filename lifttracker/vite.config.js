@@ -4,7 +4,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
+// BASE_PATH is the URL path the app is served under. GitHub Pages serves this
+// repository at /Holiday/, so the publish workflow sets it; locally it is /.
 export default defineConfig({
+  base: process.env.BASE_PATH ?? '/',
   plugins: [
     react(),
     tailwindcss(),
