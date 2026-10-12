@@ -1,6 +1,6 @@
 # LiftTracker product requirements
 
-**Status:** Phase 1 in progress. The project skeleton lives in `lifttracker/`; no screens are built yet.
+**Status:** Phase 1 built. Waiting for Franklin's check on a real Android phone against the done criteria.
 **Owner:** Franklin
 **Last updated:** October 11, 2026
 
@@ -301,6 +301,8 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 11, 2026 | Rest time is configurable for every exercise, not only a global default. |
 | October 11, 2026 | Visual direction, from the accepted wireframe: dark base with one cyan action color, a light theme that follows the device setting, Barlow for text and Barlow Condensed for numerals. |
 | October 11, 2026 | The rest timer sits at the bottom of the workout screen so the open set stays visible above it. |
+| October 12, 2026 | The first iteration targets Android phones. The iOS add-to-home-screen notice is deferred until iOS is in scope. |
+| October 12, 2026 | The app is published to GitHub Pages from `main` by a GitHub Actions workflow. |
 
 ## Open items
 
