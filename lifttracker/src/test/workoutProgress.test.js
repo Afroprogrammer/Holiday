@@ -41,6 +41,12 @@ describe('buildPlan', () => {
     expect(plan.exercises[1].rows[0].prefill).toBeNull()
   })
 
+  it('falls back to the latest set logged in this workout when there is no history', () => {
+    const plan = buildPlan(entries, [logged(dips.id, 1, 10, 0), logged(dips.id, 2, 9, 5)], {}, {})
+    expect(plan.exercises[1].rows[2].prefill).toEqual({ weight: 5, unit: 'kg', reps: 9 })
+    expect(plan.exercises[0].rows[0].prefill).toEqual({ weight: 60, unit: 'kg', reps: 8 })
+  })
+
   it('marks logged sets, flags reps outside the range, and moves the open set on', () => {
     const plan = buildPlan(entries, [logged(bench.id, 1, 8), logged(bench.id, 2, 9)], {}, {})
     const rows = plan.exercises[0].rows

@@ -9,10 +9,14 @@ export function buildPlan(entries, loggedSets, skipped, extra, focusExerciseId =
   const exercises = entries.map(({ exercise, slot, previousSets }) => {
     const total = slot.targetSets + (extra[exercise.id] ?? 0)
     const skippedSet = skipped[exercise.id] ?? new Set()
+    // With no previous session, the latest set logged for this exercise
+    // today stands in, so a first workout still needs only Done per set.
+    const own = loggedSets.filter((s) => s.exerciseId === exercise.id).sort((a, b) => a.setNumber - b.setNumber)
+    const todayFallback = own.length > 0 ? { weight: own.at(-1).weight, unit: own.at(-1).unit, reps: own.at(-1).reps } : null
     const rows = []
     for (let n = 1; n <= total; n += 1) {
       const set = loggedSets.find((s) => s.exerciseId === exercise.id && s.setNumber === n)
-      const prefill = prefillForSet(previousSets, n)
+      const prefill = prefillForSet(previousSets, n) ?? todayFallback
       if (set) rows.push({ n, status: 'logged', set, prefill, marker: rangeMarker(set.reps, slot.repMin, slot.repMax) })
       else if (skippedSet.has(n)) rows.push({ n, status: 'skipped', prefill })
       else rows.push({ n, status: 'pending', prefill })
