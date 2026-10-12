@@ -34,3 +34,11 @@ export function formatCountdown(seconds) {
   const s = String(total % 60).padStart(2, '0')
   return `${over ? '+' : ''}${m}:${s}`
 }
+
+// Share of the rest already elapsed, for the progress bar. Clamped to [0, 1]
+// so overtime keeps the bar full.
+export function progressFraction(rest, now = Date.now()) {
+  if (rest.durationSeconds <= 0) return 1
+  const elapsed = (now - rest.startedAt) / 1000
+  return Math.min(1, Math.max(0, elapsed / rest.durationSeconds))
+}

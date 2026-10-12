@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { adjustRest, formatCountdown, remainingSeconds, startRest } from '../lib/timer.js'
+import { adjustRest, formatCountdown, progressFraction, remainingSeconds, startRest } from '../lib/timer.js'
 
 const t0 = 1_000_000
 const rest = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 120 }, t0)
 
 describe('rest timer', () => {
+  it('reports elapsed progress clamped to one', () => {
+    expect(progressFraction(rest, t0)).toBe(0)
+    expect(progressFraction(rest, t0 + 60_000)).toBeCloseTo(0.5)
+    expect(progressFraction(rest, t0 + 200_000)).toBe(1)
+  })
+
   it('ends restSeconds after it starts', () => {
     expect(rest.endsAt).toBe(t0 + 120_000)
     expect(remainingSeconds(rest, t0)).toBe(120)

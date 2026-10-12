@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import ExerciseCard from '../components/ExerciseCard.jsx'
-import RestTimer from '../components/RestTimer.jsx'
+import RestDock from '../components/RestDock.jsx'
 import { finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit } from '../db/workouts.js'
 import { adjustRest, startRest } from '../lib/timer.js'
 import { otherUnit } from '../lib/units.js'
@@ -100,13 +100,12 @@ export default function Workout({ workoutId, onFinished }) {
         Finish
       </button>
 
-      {rest && (
-        <RestTimer
-          rest={rest}
-          onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))}
-          onSkip={() => saveActiveRest(null)}
-        />
-      )}
+      <RestDock
+        rest={rest}
+        nextSlug={rest ? slots.flatMap((s) => s.options).find((o) => o.id === rest.exerciseId)?.illustration : undefined}
+        onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))}
+        onSkip={() => saveActiveRest(null)}
+      />
     </main>
   )
 }
