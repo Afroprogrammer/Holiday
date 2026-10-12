@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Illustration from './Illustration.jsx'
+import { getRegistration, showRestNotification } from '../lib/restNotification.js'
 import { formatCountdown, progressFraction, remainingSeconds } from '../lib/timer.js'
 
 export const DOCK_HEIGHT = { idle: 76, resting: 236 }
@@ -49,7 +50,7 @@ function useNow(active) {
 // The rest timer, docked to the bottom of the workout screen. Idle it is one
 // line; while resting it shows the countdown, a draining bar, the next
 // exercise performing its movement, and ±15 s / Skip.
-export default function RestDock({ rest, nextSlug, onAdjust, onSkip }) {
+export default function RestDock({ rest, nextSlug, nextSet = null, notify = false, onAdjust, onSkip }) {
   const now = useNow(Boolean(rest))
   const [flash, setFlash] = useState(false)
   const remaining = rest ? remainingSeconds(rest, now) : null
@@ -57,13 +58,18 @@ export default function RestDock({ rest, nextSlug, onAdjust, onSkip }) {
   // late) shows overtime without flashing or beeping again.
   const firedFor = useRef(rest && remaining <= 0 ? rest.endsAt : null)
 
-  // Fire once when the countdown crosses zero while mounted.
+  // Fire once when the countdown crosses zero while mounted. In the
+  // background the system notification stands in for the flash and tone.
   useEffect(() => {
     if (!rest || remaining > 0 || firedFor.current === rest.endsAt) return
     firedFor.current = rest.endsAt
+    if (notify && document.hidden) {
+      getRegistration().then((registration) => showRestNotification(registration, rest, nextSet))
+      return
+    }
     signalRestOver()
     setFlash(true)
-  }, [rest, remaining])
+  }, [rest, remaining, notify, nextSet])
 
   // The flash clears itself 1.2 s later, independent of the countdown ticking.
   useEffect(() => {

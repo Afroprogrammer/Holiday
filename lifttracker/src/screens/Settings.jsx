@@ -8,6 +8,7 @@ import SettingRow from '../components/SettingRow.jsx'
 import Switch from '../components/Switch.jsx'
 import { getNextProgramDay, getProgramDays } from '../db/queries.js'
 import { DEFAULT_REST_KEYS, SETTING_KEYS, getExercisesByName, getSetting, resetCycle, setSetting } from '../db/settings.js'
+import { notificationPermission, requestNotificationPermission } from '../lib/restNotification.js'
 
 function Group({ children }) {
   return <h2 className="mt-6 mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-3">{children}</h2>
@@ -25,6 +26,29 @@ function BoolSetting({ settingKey, label, caption, disabled = false, disabledCap
   return (
     <SettingRow label={label} caption={disabled ? disabledCaption : caption}>
       <Switch checked={Boolean(stored)} disabled={disabled} onChange={(v) => setSetting(settingKey, v)} label={label} />
+    </SettingRow>
+  )
+}
+
+function NotifySetting() {
+  const stored = useLiveQuery(() => getSetting(SETTING_KEYS.restNotification))
+  const [permission, setPermission] = useState(() => notificationPermission())
+  if (stored === undefined) return null
+  const blocked = permission === 'denied'
+  const unsupported = permission === 'unsupported'
+  const caption = unsupported ? 'Not available on this browser' : blocked ? 'Blocked in Android settings' : 'when you leave the app during a rest'
+  return (
+    <SettingRow label="Buzz when a rest ends" caption={caption}>
+      <Switch
+        checked={Boolean(stored) && permission === 'granted'}
+        disabled={blocked || unsupported}
+        label="Buzz when a rest ends"
+        onChange={async (on) => {
+          if (on && permission === 'default') setPermission(await requestNotificationPermission())
+          await setSetting(SETTING_KEYS.restNotification, on)
+          await setSetting(SETTING_KEYS.restNotificationAsked, true)
+        }}
+      />
     </SettingRow>
   )
 }
@@ -74,6 +98,7 @@ export default function Settings() {
 
       <Group>Workout</Group>
       <BoolSetting settingKey={SETTING_KEYS.keepScreenOn} label="Keep screen on during workout" caption="while the workout screen is open" />
+      <NotifySetting />
 
       <Group>Program</Group>
       <button type="button" onClick={() => setPicking(true)} className="flex min-h-14 w-full items-center gap-3 border-b border-rule py-2 text-left">

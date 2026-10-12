@@ -56,4 +56,31 @@ describe('RestDock', () => {
     expect(screen.getByTestId('rest-bar').style.width).toBe('100%')
     vi.useRealTimers()
   })
+
+  it('raises a notification at zero only while hidden and allowed', async () => {
+    vi.useFakeTimers()
+    const now = 1_000_000
+    vi.setSystemTime(now)
+    const showNotification = vi.fn().mockResolvedValue()
+    Object.defineProperty(navigator, 'serviceWorker', { value: { ready: Promise.resolve({ showNotification }) }, configurable: true })
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true })
+    const rest = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, now)
+    const next = { exerciseName: 'Deadlift', setNumber: 2, total: 3 }
+    const { rerender } = render(<RestDock rest={rest} nextSlug="deadlift" nextSet={next} notify onAdjust={() => {}} onSkip={() => {}} />)
+    await act(async () => {
+      vi.advanceTimersByTime(2_250)
+    })
+    await act(async () => {})
+    expect(showNotification).toHaveBeenCalledWith('Rest over', expect.objectContaining({ body: 'Deadlift · set 2 of 3 next' }))
+    showNotification.mockClear()
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true })
+    const second = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, Date.now())
+    rerender(<RestDock rest={second} nextSlug="deadlift" nextSet={next} notify onAdjust={() => {}} onSkip={() => {}} />)
+    await act(async () => {
+      vi.advanceTimersByTime(2_250)
+    })
+    await act(async () => {})
+    expect(showNotification).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
 })

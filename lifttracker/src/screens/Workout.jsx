@@ -4,9 +4,10 @@ import BottomSheet from '../components/BottomSheet.jsx'
 import Illustration from '../components/Illustration.jsx'
 import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
 import Stepper from '../components/Stepper.jsx'
-import { getSetting, SETTING_KEYS } from '../db/settings.js'
+import { getSetting, setSetting, SETTING_KEYS } from '../db/settings.js'
 import { finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit } from '../db/workouts.js'
 import { formatSession } from '../lib/history.js'
+import { closeRestNotifications, getRegistration, notificationPermission, requestNotificationPermission } from '../lib/restNotification.js'
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
 import { useWakeLock } from '../lib/wakeLock.js'
@@ -139,6 +140,9 @@ export default function Workout({ workoutId, onFinished }) {
   const rest = useLiveQuery(getActiveRest)
   const keepScreenOn = useLiveQuery(() => getSetting(SETTING_KEYS.keepScreenOn))
   useWakeLock(keepScreenOn !== false)
+  const notifyPref = useLiveQuery(() => getSetting(SETTING_KEYS.restNotification))
+  const askedPref = useLiveQuery(() => getSetting(SETTING_KEYS.restNotificationAsked))
+  const [askingNotify, setAskingNotify] = useState(false)
   const now = useTicker(1000)
   const [chosen, setChosen] = useState({})
   const [skipped, setSkipped] = useState({})
@@ -173,6 +177,8 @@ export default function Workout({ workoutId, onFinished }) {
   const done = async (setNumber, values) => {
     await logSet({ workoutId: workout.id, exerciseId: active.exercise.id, setNumber, ...values })
     await saveActiveRest(startRest({ exerciseId: active.exercise.id, exerciseName: shortName(active.exercise.name), restSeconds: active.exercise.restSeconds }))
+    getRegistration().then(closeRestNotifications)
+    if (notificationPermission() === 'default' && askedPref === false) setAskingNotify(true)
   }
 
   const toggleSkip = (exerciseId, setNumber, on) =>
@@ -184,6 +190,9 @@ export default function Workout({ workoutId, onFinished }) {
     })
 
   const nextSlug = rest && activeRow ? active.exercise.illustration : undefined
+  const notify = notifyPref !== false && notificationPermission() === 'granted'
+  // After this rest the next set is the row that is open now.
+  const nextSet = rest && activeRow ? { exerciseName: shortName(active.exercise.name), setNumber: activeRow.n, total: active.total } : null
 
   return (
     <main className="min-h-dvh px-5 pt-3.5" style={{ paddingBottom: (rest ? DOCK_HEIGHT.resting : DOCK_HEIGHT.idle) + 16 }}>
@@ -287,7 +296,17 @@ export default function Workout({ workoutId, onFinished }) {
         </button>
       </div>
 
-      <RestDock rest={rest} nextSlug={nextSlug} onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))} onSkip={() => saveActiveRest(null)} />
+      <RestDock
+        rest={rest}
+        nextSlug={nextSlug}
+        nextSet={nextSet}
+        notify={notify}
+        onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))}
+        onSkip={() => {
+          saveActiveRest(null)
+          getRegistration().then(closeRestNotifications)
+        }}
+      />
 
       <BottomSheet open={confirming} title={`Finish ${day.name}?`} onClose={() => setConfirming(false)}>
         <p className="mt-1 mb-3.5 text-[15px] text-ink-2">{sentence}</p>
@@ -296,6 +315,31 @@ export default function Workout({ workoutId, onFinished }) {
         </button>
         <button type="button" onClick={finish} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2">
           Finish anyway
+        </button>
+      </BottomSheet>
+
+      <BottomSheet open={askingNotify} title="Buzz when a rest ends?" onClose={() => setAskingNotify(false)}>
+        <p className="mt-1 mb-3.5 text-[15px] text-ink-2">Only used when you leave the app during a rest.</p>
+        <button
+          type="button"
+          onClick={async () => {
+            await setSetting(SETTING_KEYS.restNotificationAsked, true)
+            setAskingNotify(false)
+            await requestNotificationPermission()
+          }}
+          className="mb-2.5 h-[60px] w-full rounded-2xl bg-act text-lg font-semibold text-on-act"
+        >
+          Allow
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            await setSetting(SETTING_KEYS.restNotificationAsked, true)
+            setAskingNotify(false)
+          }}
+          className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2"
+        >
+          Not now
         </button>
       </BottomSheet>
     </main>

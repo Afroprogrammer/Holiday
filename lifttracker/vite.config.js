@@ -35,6 +35,7 @@ export default defineConfig({
       workbox: {
         // Cache the app shell so the app opens with no connection.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        importScripts: ['sw-notify.js'],
       },
     }),
   ],
