@@ -7,6 +7,8 @@ import Stepper from '../components/Stepper.jsx'
 import BottomSheet from '../components/BottomSheet.jsx'
 import CycleBar from '../components/CycleBar.jsx'
 import { summaryOf } from '../components/DaySheet.jsx'
+import Switch from '../components/Switch.jsx'
+import SettingRow from '../components/SettingRow.jsx'
 import { exercises, programDays } from '../db/program.js'
 
 describe('Stepper', () => {
@@ -69,5 +71,31 @@ describe('summaryOf', () => {
     const byId = new Map(exercises.map((e) => [e.id, e]))
     expect(summaryOf(programDays[0], byId)).toBe('bench press · chest press · shoulder press · dips · cable crunch')
     expect(summaryOf(programDays[3], byId)).toBe('deadlift · lat pulldown · bent-over row · dumbbell shrugs · ab crunch')
+  })
+})
+
+describe('Switch', () => {
+  it('toggles and reports its state', () => {
+    const onChange = vi.fn()
+    const { rerender } = render(<Switch checked={false} onChange={onChange} label="Keep screen on" />)
+    const sw = screen.getByRole('switch', { name: 'Keep screen on' })
+    expect(sw.getAttribute('aria-checked')).toBe('false')
+    fireEvent.click(sw)
+    expect(onChange).toHaveBeenCalledWith(true)
+    rerender(<Switch checked onChange={onChange} label="Keep screen on" disabled />)
+    fireEvent.click(screen.getByRole('switch'))
+    expect(onChange).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('SettingRow', () => {
+  it('is a button only when it has an action', () => {
+    const onClick = vi.fn()
+    const { rerender } = render(<SettingRow label="Export history" caption="Saves a file" onClick={onClick} />)
+    fireEvent.click(screen.getByRole('button', { name: /export history/i }))
+    expect(onClick).toHaveBeenCalled()
+    rerender(<SettingRow label="Keep screen on"><span>x</span></SettingRow>)
+    expect(screen.queryByRole('button')).toBeNull()
+    expect(screen.getByText('Keep screen on')).toBeTruthy()
   })
 })
