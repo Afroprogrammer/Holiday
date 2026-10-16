@@ -1,0 +1,32 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-16T00:10:00Z"},
+  "title": "LiftTracker Wireframes",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html":        {"x": 0,    "y": 0,    "w": 390, "h": 844, "title": "A · Ledger · Workout"},
+    "A-Home.dc.html":      {"x": 470,  "y": 0,    "w": 390, "h": 844, "title": "A · Ledger · Home"},
+    "A-Timer.dc.html":     {"x": 940,  "y": 0,    "w": 390, "h": 844, "title": "A · Ledger · Rest timer"},
+    "B-Workout.dc.html":   {"x": 0,    "y": 1300, "w": 390, "h": 844, "title": "B · Focus · Workout"},
+    "B-Home.dc.html":      {"x": 470,  "y": 1300, "w": 390, "h": 844, "title": "B · Focus · Home"},
+    "B-Timer.dc.html":     {"x": 940,  "y": 1300, "w": 390, "h": 844, "title": "B · Focus · Rest timer"},
+    "C-Workout.dc.html":   {"x": 0,    "y": 2600, "w": 390, "h": 844, "title": "C · Rack · Workout"},
+    "C-Home.dc.html":      {"x": 470,  "y": 2600, "w": 390, "h": 844, "title": "C · Rack · Home"},
+    "C-Timer.dc.html":     {"x": 940,  "y": 2600, "w": 390, "h": 844, "title": "C · Rack · Rest timer"}
+  },
+  "order": [
+    "Main.dc.html", "A-Home.dc.html", "A-Timer.dc.html",
+    "B-Workout.dc.html", "B-Home.dc.html", "B-Timer.dc.html",
+    "C-Workout.dc.html", "C-Home.dc.html", "C-Timer.dc.html"
+  ],
+  "notes": {
+    "titleA": {"x": 0, "y": -300, "text": "Direction A · Ledger", "kind": "title1", "maxW": 1330},
+    "titleB": {"x": 0, "y": 1000, "text": "Direction B · Focus", "kind": "title1", "maxW": 1330},
+    "titleC": {"x": 0, "y": 2300, "text": "Direction C · Rack", "kind": "title1", "maxW": 1330},
+    "noteA": {"x": 1410, "y": 0, "w": 360, "maxH": 844, "fill": "gray", "text": "A · Ledger\n\nAll five exercises on one scrolling page, each as a compact table: Set · Last · Weight · Reps · Done. Closest to Strong and Hevy, so nothing to learn.\n\nSignature move: prefilled values sit in a lighter chalk tone and turn solid when you tap Done. You can always tell logged from prefilled.\n\nTimer: a pill at the bottom that fills as rest runs, turns red and counts up past target. Tap to expand for −15 / +15 / Skip. The set table stays visible.\n\nBest if you want density and to see the whole session at once."},
+    "noteB": {"x": 1410, "y": 1300, "w": 360, "maxH": 844, "fill": "gray", "text": "B · Focus\n\nOne exercise per screen, swipe between them. A strip at the top shows where you are in the five. The next set is expanded with a very large weight numeral, and Done sits in the thumb zone. Completed sets collapse into one line each.\n\nSignature move: the weight numeral is the control. Minus and plus flank it, and a small tick under it reads \"last 60\". No table to scan.\n\nTimer: the bottom third of the screen becomes the timer bar when rest runs. The next set stays visible above it.\n\nBest if you want the fewest things on screen and the biggest numbers."},
+    "noteC": {"x": 1410, "y": 2600, "w": 360, "maxH": 844, "fill": "gray", "text": "C · Rack\n\nLight theme for bright gyms. Exercises as a vertical list of compact cards. Each set is a chip in a row: done chips are solid, the active chip is open with steppers, pending chips are outlined.\n\nSignature move: a plate strip under every barbell exercise shows what to load per side (20 · 15 · 2.5) as small plate glyphs. Machines show their stack unit instead.\n\nTimer: a thin bar directly under the sticky header drains as rest runs, with the number in the header. Tap the header to expand controls.\n\nBest if your gym is bright or you want a lighter, more playful look. Dark variant is a palette swap."}
+  },
+  "designSystems": []
+}
