@@ -97,3 +97,13 @@ export async function getExerciseHistory(exerciseId, limit = 5) {
   const workouts = await db.workouts.toArray()
   return groupSessions(sets, workouts, limit)
 }
+
+// Corrections to a logged set (gym round 1, 2.3). Only weight, unit and
+// reps change; loggedAt and the set number stay.
+export async function updateSet(id, { weight, unit, reps }) {
+  await db.sets.update(id, { weight, unit, reps })
+}
+
+export async function deleteSet(id) {
+  await db.sets.delete(id)
+}
