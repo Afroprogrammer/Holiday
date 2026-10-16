@@ -58,8 +58,9 @@ Phase 1, as specified in `lifttracker/prd.md`:
   an override to start a different day, and a settings link.
 - Active workout screen: one card per exercise, a toggle for slots with
   alternatives, set rows prefilled from the last session, weight and reps with
-  steppers, Done per set, add an extra set, skip a set, Finish with
-  confirmation when sets remain.
+  steppers, Done per set, a done card during the rest, edit or remove a
+  logged set, add an extra set, skip a set, Finish with confirmation when
+  sets remain.
 - Automatic rest timer that survives screen lock and shows overtime.
 - Per-exercise display unit with the other unit shown beside it. Weight is
   stored exactly as entered, with its unit.
