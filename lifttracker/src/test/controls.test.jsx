@@ -99,3 +99,23 @@ describe('SettingRow', () => {
     expect(screen.getByText('Keep screen on')).toBeTruthy()
   })
 })
+
+describe('Stepper number rules', () => {
+  it('keeps digits only when integer', () => {
+    const onChange = vi.fn()
+    render(<Stepper value="1" onChange={onChange} step={1} size="reps" label="Reps" inputMode="numeric" integer />)
+    fireEvent.change(screen.getByLabelText('Reps'), { target: { value: '1.5' } })
+    expect(onChange).toHaveBeenLastCalledWith('15')
+    fireEvent.change(screen.getByLabelText('Reps'), { target: { value: '1,' } })
+    expect(onChange).toHaveBeenLastCalledWith('1')
+  })
+
+  it('keeps at most one dot for decimals and steps from a trailing dot', () => {
+    const onChange = vi.fn()
+    render(<Stepper value="5." onChange={onChange} step={2.5} size="weight" label="Weight" inputMode="decimal" />)
+    fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '1..5' } })
+    expect(onChange).toHaveBeenLastCalledWith('1.5')
+    fireEvent.click(screen.getByLabelText('Weight plus'))
+    expect(onChange).toHaveBeenLastCalledWith('7.5')
+  })
+})

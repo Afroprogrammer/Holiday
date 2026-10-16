@@ -1,9 +1,14 @@
+import { sanitize, toNumber } from '../lib/numberInput.js'
 // The large weight and reps steppers of the active set. Minus and plus are
 // 64 px columns; the value is editable by tapping it. See the spec's
 // "Workout" section for sizes.
-export default function Stepper({ value, onChange, step, size, unit, onFlipUnit, caption, label, inputMode }) {
-  const num = value === '' ? 0 : Number(value)
-  const bump = (delta) => onChange(String(Math.max(0, Math.round((num + delta) * 100) / 100)))
+
+export default function Stepper({ value, onChange, step, size, unit, onFlipUnit, caption, label, inputMode, integer = false }) {
+  const num = toNumber(value)
+  const bump = (delta) => {
+    const next = Math.max(0, Math.round((num + delta) * 100) / 100)
+    onChange(String(integer ? Math.round(next) : next))
+  }
   const tall = size === 'weight'
   const valueClass = tall ? 'text-[56px]' : 'text-[44px]'
   return (
@@ -15,10 +20,10 @@ export default function Stepper({ value, onChange, step, size, unit, onFlipUnit,
         <div className="flex items-baseline">
           <input
             type="text"
-            inputMode={inputMode}
+            inputMode={integer ? 'numeric' : inputMode}
             aria-label={label}
             value={value}
-            onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
+            onChange={(e) => onChange(sanitize(e.target.value, integer))}
             size={Math.max(1, value.length)}
             className={`m-0 h-[1em] w-auto min-w-[3ch] bg-transparent p-0 text-center font-num font-bold leading-none tracking-tight outline-none ${valueClass}`}
           />

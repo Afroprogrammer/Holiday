@@ -78,7 +78,7 @@ export function ActiveSet({ exercise, row, total, targetText, onDone, onFlipUnit
         />
       </div>
       <div className="mt-3">
-        <Stepper value={reps} onChange={setReps} step={1} size="reps" caption={`reps · target ${targetText}`} label="Reps" inputMode="numeric" />
+        <Stepper value={reps} onChange={setReps} step={1} size="reps" caption={`reps · target ${targetText}`} label="Reps" inputMode="numeric" integer />
       </div>
       <button
         type="button"
