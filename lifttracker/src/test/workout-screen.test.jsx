@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ActiveSet } from '../screens/Workout.jsx'
 
@@ -32,5 +32,27 @@ describe('ActiveSet', () => {
     fireEvent.change(screen.getByLabelText('Weight'), { target: { value: '40' } })
     fireEvent.change(screen.getByLabelText('Reps'), { target: { value: '10' } })
     expect(screen.getByRole('button', { name: /done/i }).disabled).toBe(false)
+  })
+})
+
+describe('ActiveSet transitions and double taps', () => {
+  it('animates in when entering and pulses the heading', () => {
+    const { container } = render(<ActiveSet exercise={exercise} row={row} total={4} targetText="5–8" entering onDone={() => {}} onFlipUnit={() => {}} />)
+    expect(container.firstChild.className).toContain('set-in')
+    expect(container.querySelector('h3').className).toContain('heading-pulse')
+  })
+
+  it('disables Done while a log is pending', async () => {
+    let resolve
+    const onDone = vi.fn(() => new Promise((r) => { resolve = r }))
+    render(<ActiveSet exercise={exercise} row={row} total={4} targetText="5–8" onDone={onDone} onFlipUnit={() => {}} />)
+    const done = screen.getByRole('button', { name: /done/i })
+    await act(async () => {
+      fireEvent.click(done)
+    })
+    fireEvent.click(done)
+    expect(onDone).toHaveBeenCalledTimes(1)
+    expect(done.disabled).toBe(true)
+    await act(async () => resolve())
   })
 })

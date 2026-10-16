@@ -2,10 +2,11 @@
 // rather than a running counter, so it keeps counting if the screen locks or
 // the app is backgrounded. At zero it shows elapsed overtime.
 
-export function startRest({ exerciseId, exerciseName, restSeconds }, now = Date.now()) {
+export function startRest({ exerciseId, exerciseName, restSeconds, setId = null }, now = Date.now()) {
   return {
     exerciseId,
     exerciseName,
+    setId,
     durationSeconds: restSeconds,
     startedAt: now,
     endsAt: now + restSeconds * 1000,

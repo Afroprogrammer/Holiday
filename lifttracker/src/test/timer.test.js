@@ -5,6 +5,11 @@ const t0 = 1_000_000
 const rest = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 120 }, t0)
 
 describe('rest timer', () => {
+  it('keeps the set that started it', () => {
+    const r = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 120, setId: 's9' }, t0)
+    expect(r.setId).toBe('s9')
+  })
+
   it('reports elapsed progress clamped to one', () => {
     expect(progressFraction(rest, t0)).toBe(0)
     expect(progressFraction(rest, t0 + 60_000)).toBeCloseTo(0.5)

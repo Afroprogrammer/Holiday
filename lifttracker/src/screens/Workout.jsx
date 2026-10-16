@@ -1,17 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import BottomSheet from '../components/BottomSheet.jsx'
+import DoneCard from '../components/DoneCard.jsx'
 import Illustration from '../components/Illustration.jsx'
 import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
+import SetEditor from '../components/SetEditor.jsx'
 import Stepper from '../components/Stepper.jsx'
 import { getSetting, setSetting, SETTING_KEYS } from '../db/settings.js'
-import { finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit } from '../db/workouts.js'
+import { deleteSet, finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit, updateSet } from '../db/workouts.js'
 import { formatSession } from '../lib/history.js'
+import { toNumber } from '../lib/numberInput.js'
+import { rangeMarker } from '../lib/prefill.js'
 import { closeRestNotifications, getRegistration, notificationPermission, requestNotificationPermission } from '../lib/restNotification.js'
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
 import { useWakeLock } from '../lib/wakeLock.js'
-import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, shortName } from '../lib/workoutProgress.js'
+import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, shortName } from '../lib/workoutProgress.js'
 
 // Picks which alternative a slot shows today: the one already logged in this
 // workout, else the one with the most recent history, else the first.
@@ -43,21 +47,33 @@ function useTicker(ms) {
 }
 
 // The one set with controls. Two taps when last time's values are right:
-// Done and nothing else. Exported for tests.
-export function ActiveSet({ exercise, row, total, targetText, onDone, onFlipUnit }) {
+// Done and nothing else. `entering` runs the slide-in after a rest. Done is
+// locked while the log is being written so a double tap cannot log twice.
+// Exported for tests.
+export function ActiveSet({ exercise, row, total, targetText, entering = false, onDone, onFlipUnit }) {
   const unit = exercise.displayUnit
   const initialWeight = row.prefill ? String(convertWeight(row.prefill.weight, row.prefill.unit, unit)) : ''
   const [weight, setWeight] = useState(initialWeight)
   const [reps, setReps] = useState(row.prefill ? String(row.prefill.reps) : '')
+  const [pending, setPending] = useState(false)
   const ready = weight !== '' && reps !== '' && !Number.isNaN(Number(weight)) && !Number.isNaN(Number(reps))
-  const weightNum = weight === '' ? 0 : Number(weight)
+  const weightNum = toNumber(weight)
   const step = incrementFor(exercise, unit)
   const other = otherUnit(unit)
 
+  const submit = async () => {
+    setPending(true)
+    try {
+      await onDone(row.n, { weight: weightNum, unit, reps: Math.round(toNumber(reps)) })
+    } finally {
+      setPending(false)
+    }
+  }
+
   return (
-    <section>
+    <section className={entering ? 'set-in' : ''}>
       <div className="mt-5 flex items-baseline justify-between">
-        <h3 className="font-num text-[22px] font-bold uppercase tracking-wide">
+        <h3 className={`font-num text-[22px] font-bold uppercase tracking-wide ${entering ? 'heading-pulse' : ''}`}>
           Set {row.n} <span className="font-semibold text-ink-3">of {total}</span>
         </h3>
         <p className="text-[15px] text-ink-2">
@@ -80,51 +96,57 @@ export function ActiveSet({ exercise, row, total, targetText, onDone, onFlipUnit
       <div className="mt-3">
         <Stepper value={reps} onChange={setReps} step={1} size="reps" caption={`reps · target ${targetText}`} label="Reps" inputMode="numeric" integer />
       </div>
-      <button
-        type="button"
-        disabled={!ready}
-        onClick={() => onDone(row.n, { weight: Number(weight), unit, reps: Number(reps) })}
-        className="mt-3.5 h-16 w-full rounded-2xl bg-act text-xl font-semibold text-on-act disabled:opacity-45"
-      >
+      <button type="button" disabled={!ready || pending} onClick={submit} className="mt-3.5 h-16 w-full rounded-2xl bg-act text-xl font-semibold text-on-act disabled:opacity-45">
         Done · start rest
       </button>
     </section>
   )
 }
 
-function SetRows({ plan, onSkip, onUnskip, onAddSet }) {
-  const rows = plan.rows.filter((r) => r.status !== 'open')
+function SetRows({ plan, editingId, hiddenId, editor, onEdit, onSkip, onUnskip, onAddSet }) {
+  const rows = plan.rows.filter((r) => r.status !== 'open' && !(r.status === 'logged' && r.set.id === hiddenId))
   return (
     <ul className="mt-5 border-t border-rule">
-      {rows.map((r) => (
-        <li key={r.n} className={`flex h-11 items-center gap-3 border-b border-rule text-[15px] ${r.status === 'logged' ? 'text-ink' : 'text-ink-2'}`}>
-          <span className={`w-10 font-num text-[15px] font-bold tracking-wide ${r.status === 'logged' ? 'text-act' : 'text-ink-3'}`}>S{r.n}</span>
-          {r.status === 'logged' && (
-            <>
-              <span className="font-num text-[17px] font-semibold">
-                {r.set.weight} {r.set.unit} × {r.set.reps}
-              </span>
-              {r.marker && <span className="ml-auto text-xs font-semibold text-flag">{r.marker.kind} range</span>}
-            </>
-          )}
-          {r.status === 'skipped' && (
-            <>
-              <span>skipped</span>
-              <button type="button" onClick={() => onUnskip(r.n)} className="ml-auto h-11 px-2 font-semibold text-act">
-                Undo
+      {rows.map((r) => {
+        if (r.status === 'logged' && r.set.id === editingId) {
+          return (
+            <li key={r.n} className="border-b border-rule pb-3">
+              {editor(r.set)}
+            </li>
+          )
+        }
+        return (
+          <li key={r.n} className={`flex min-h-11 items-center gap-3 border-b border-rule text-[15px] ${r.status === 'logged' ? 'text-ink' : 'text-ink-2'}`}>
+            {r.status === 'logged' && (
+              <button type="button" onClick={() => onEdit(r.set)} className="flex h-11 w-full items-center gap-3 text-left">
+                <span className="w-10 font-num text-[15px] font-bold tracking-wide text-act">S{r.n}</span>
+                <span className="font-num text-[17px] font-semibold">
+                  {r.set.weight} {r.set.unit} × {r.set.reps}
+                </span>
+                {r.marker && <span className="ml-auto text-xs font-semibold text-flag">{r.marker.kind} range</span>}
               </button>
-            </>
-          )}
-          {r.status === 'pending' && (
-            <>
-              <span>last {lastTimeText(r.last, plan.exercise.displayUnit)}</span>
-              <button type="button" onClick={() => onSkip(r.n)} className="ml-auto h-11 px-2 font-semibold text-act">
-                Skip
-              </button>
-            </>
-          )}
-        </li>
-      ))}
+            )}
+            {r.status === 'skipped' && (
+              <>
+                <span className="w-10 font-num text-[15px] font-bold tracking-wide text-ink-3">S{r.n}</span>
+                <span>skipped</span>
+                <button type="button" onClick={() => onUnskip(r.n)} className="ml-auto h-11 px-2 font-semibold text-act">
+                  Undo
+                </button>
+              </>
+            )}
+            {r.status === 'pending' && (
+              <>
+                <span className="w-10 font-num text-[15px] font-bold tracking-wide text-ink-3">S{r.n}</span>
+                <span>last {lastTimeText(r.last, plan.exercise.displayUnit)}</span>
+                <button type="button" onClick={() => onSkip(r.n)} className="ml-auto h-11 px-2 font-semibold text-act">
+                  Skip
+                </button>
+              </>
+            )}
+          </li>
+        )
+      })}
       <li className="flex h-11 items-center gap-3">
         <span className="w-10 font-num text-[15px] font-bold text-ink-3">+</span>
         <button type="button" onClick={onAddSet} className="h-11 font-semibold text-act">
@@ -149,6 +171,30 @@ export default function Workout({ workoutId, onFinished }) {
   const [extra, setExtra] = useState({})
   const [focus, setFocus] = useState(null)
   const [confirming, setConfirming] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [removing, setRemoving] = useState(null)
+  const [leaving, setLeaving] = useState(false)
+  const [entering, setEntering] = useState(false)
+
+  // When the rest ends or is skipped, let the done card leave, then bring
+  // the next set in (gym round 1, 2.1).
+  const phase = restPhase(rest ?? null, now)
+  const prevPhase = useRef(phase)
+  useEffect(() => {
+    const was = prevPhase.current
+    prevPhase.current = phase
+    if (phase === 'running') {
+      setEntering(false)
+      return undefined
+    }
+    if (was !== 'running') return undefined
+    setLeaving(true)
+    const id = setTimeout(() => {
+      setLeaving(false)
+      setEntering(true)
+    }, 180)
+    return () => clearTimeout(id)
+  }, [phase])
 
   if (view === undefined || rest === undefined || view === null) return null
   const { workout, day, slots, loggedSets } = view
@@ -166,6 +212,13 @@ export default function Workout({ workoutId, onFinished }) {
   const queue = plan.exercises.filter((e, i) => i !== activeIndex && e.remaining > 0)
   const completed = plan.exercises.filter((e, i) => i !== activeIndex && e.remaining === 0 && e.rows.some((r) => r.status === 'logged'))
   const sentence = remainingSentence(plan)
+  const targetText = repsText(active.slot).replace(' reps', '')
+
+  // The set that started the running rest, shown on the done card while the
+  // exercise it belongs to is the active one.
+  const restSet = rest ? (loggedSets.find((s) => s.id === rest.setId) ?? null) : null
+  const cardSet = restSet && restSet.exerciseId === active.exercise.id ? restSet : null
+  const cardMarker = cardSet ? rangeMarker(cardSet.reps, active.slot.repMin, active.slot.repMax) : null
 
   const finish = async () => {
     await saveActiveRest(null)
@@ -175,10 +228,30 @@ export default function Workout({ workoutId, onFinished }) {
   }
 
   const done = async (setNumber, values) => {
-    await logSet({ workoutId: workout.id, exerciseId: active.exercise.id, setNumber, ...values })
-    await saveActiveRest(startRest({ exerciseId: active.exercise.id, exerciseName: shortName(active.exercise.name), restSeconds: active.exercise.restSeconds }))
+    const logged = await logSet({ workoutId: workout.id, exerciseId: active.exercise.id, setNumber, ...values })
+    await saveActiveRest(
+      startRest({ exerciseId: active.exercise.id, exerciseName: shortName(active.exercise.name), restSeconds: active.exercise.restSeconds, setId: logged.id }),
+    )
     getRegistration().then(closeRestNotifications)
     if (notificationPermission() === 'default' && askedPref === false) setAskingNotify(true)
+  }
+
+  const skipRest = () => {
+    saveActiveRest(null)
+    getRegistration().then(closeRestNotifications)
+  }
+
+  const saveEdit = async (set, values) => {
+    await updateSet(set.id, values)
+    setEditing(null)
+  }
+
+  const confirmRemove = async () => {
+    const target = removing
+    setRemoving(null)
+    setEditing(null)
+    if (rest?.setId === target.id) await saveActiveRest(null)
+    await deleteSet(target.id)
   }
 
   const toggleSkip = (exerciseId, setNumber, on) =>
@@ -200,6 +273,30 @@ export default function Workout({ workoutId, onFinished }) {
   // After this rest the next set is the row that is open now.
   const nextSet = rest && activeRow ? { exerciseName: shortName(active.exercise.name), setNumber: activeRow.n, total: active.total } : null
 
+  const editorFor = (set) => (
+    <SetEditor set={set} exercise={active.exercise} targetText={targetText} onSave={(v) => saveEdit(set, v)} onCancel={() => setEditing(null)} onRemove={() => setRemoving(set)} />
+  )
+
+  const showCard = (phase === 'running' || leaving) && cardSet !== null
+  let activeArea
+  if (cardSet && editing === cardSet.id) activeArea = editorFor(cardSet)
+  else if (showCard) activeArea = <DoneCard set={cardSet} marker={cardMarker} leaving={leaving} onEdit={() => setEditing(cardSet.id)} onSkipRest={skipRest} />
+  else if (activeRow && editing === null)
+    activeArea = (
+      <ActiveSet
+        key={`${active.exercise.id}-${activeRow.n}-${active.exercise.displayUnit}`}
+        exercise={active.exercise}
+        row={activeRow}
+        total={active.total}
+        targetText={targetText}
+        entering={entering}
+        onDone={done}
+        onFlipUnit={() => setDisplayUnit(active.exercise.id, otherUnit(active.exercise.displayUnit))}
+      />
+    )
+  else if (!activeRow) activeArea = <p className="mt-6 font-num text-[22px] font-bold uppercase tracking-wide text-act">All {plan.total} sets logged</p>
+  else activeArea = null
+
   return (
     <main className="min-h-dvh px-5 pt-3.5" style={{ paddingBottom: (rest ? DOCK_HEIGHT.resting : DOCK_HEIGHT.idle) + 16 }}>
       <header className="flex h-11 items-center justify-between text-sm font-medium text-ink-2">
@@ -216,7 +313,7 @@ export default function Workout({ workoutId, onFinished }) {
           <p className="text-[13px] font-semibold uppercase tracking-wider text-act">
             Exercise {activeIndex + 1} of {plan.exercises.length}
           </p>
-          <h2 className="mt-1 font-num text-[40px] font-bold uppercase leading-[0.95]">{active.exercise.name}</h2>
+          <h2 className="mt-1 font-num text-[40px] font-bold uppercase leading-[0.95]">{shortName(active.exercise.name)}</h2>
           <p className="mt-1.5 text-[15px] text-ink-2">
             {active.slot.targetSets} sets · {repsText(active.slot)} · rest {active.exercise.restSeconds} s{active.exercise.lowerIsBetter ? ' · assistance' : ''}
           </p>
@@ -235,25 +332,17 @@ export default function Workout({ workoutId, onFinished }) {
             </div>
           )}
         </div>
-        <Illustration slug={active.exercise.illustration} size={96} tone="ink-2" live={Boolean(activeRow)} />
+        <Illustration slug={active.exercise.illustration} size={96} tone="ink-2" live={Boolean(activeRow) && !showCard} />
       </section>
 
-      {activeRow ? (
-        <ActiveSet
-          key={`${active.exercise.id}-${activeRow.n}-${active.exercise.displayUnit}`}
-          exercise={active.exercise}
-          row={activeRow}
-          total={active.total}
-          targetText={repsText(active.slot).replace(' reps', '')}
-          onDone={done}
-          onFlipUnit={() => setDisplayUnit(active.exercise.id, otherUnit(active.exercise.displayUnit))}
-        />
-      ) : (
-        <p className="mt-6 font-num text-[22px] font-bold uppercase tracking-wide text-act">All {plan.total} sets logged</p>
-      )}
+      {activeArea}
 
       <SetRows
         plan={active}
+        editingId={editing}
+        hiddenId={showCard || (cardSet && editing === cardSet.id) ? cardSet.id : null}
+        editor={editorFor}
+        onEdit={(set) => setEditing(set.id)}
         onSkip={(n) => toggleSkip(active.exercise.id, n, true)}
         onUnskip={(n) => toggleSkip(active.exercise.id, n, false)}
         onAddSet={() => setExtra((e) => ({ ...e, [active.exercise.id]: (e[active.exercise.id] ?? 0) + 1 }))}
@@ -302,17 +391,7 @@ export default function Workout({ workoutId, onFinished }) {
         </button>
       </div>
 
-      <RestDock
-        rest={rest}
-        nextSlug={nextSlug}
-        nextSet={nextSet}
-        notify={notify}
-        onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))}
-        onSkip={() => {
-          saveActiveRest(null)
-          getRegistration().then(closeRestNotifications)
-        }}
-      />
+      <RestDock rest={rest} nextSlug={nextSlug} nextSet={nextSet} notify={notify} onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))} onSkip={skipRest} />
 
       <BottomSheet open={confirming} title={`Finish ${day.name}?`} onClose={() => setConfirming(false)}>
         <p className="mt-1 mb-3.5 text-[15px] text-ink-2">{sentence}</p>
@@ -321,6 +400,18 @@ export default function Workout({ workoutId, onFinished }) {
         </button>
         <button type="button" onClick={finish} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-ink-2">
           Finish anyway
+        </button>
+      </BottomSheet>
+
+      <BottomSheet open={removing !== null} title={`Remove set ${removing?.setNumber}?`} onClose={() => setRemoving(null)}>
+        <p className="mt-1 mb-3.5 text-[15px] text-ink-2">
+          {removing?.weight} {removing?.unit} × {removing?.reps} is deleted. Later sets keep their numbers.
+        </p>
+        <button type="button" onClick={() => setRemoving(null)} className="mb-2.5 h-[60px] w-full rounded-2xl bg-act text-lg font-semibold text-on-act">
+          Keep
+        </button>
+        <button type="button" onClick={confirmRemove} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-flag">
+          Remove
         </button>
       </BottomSheet>
 

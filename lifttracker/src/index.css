@@ -113,3 +113,16 @@ body {
   .ill.live i { animation: none; }
   .ill.live::after { display: none; }
 }
+
+/* Set handoff (gym round 1, 2.1): the done card leaves upward, the next set
+   arrives from below, and its heading takes one amber pulse. */
+.set-out { animation: set-out 180ms ease-in forwards; }
+.set-in { animation: set-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.heading-pulse { animation: heading-pulse 600ms ease-out; border-radius: 6px; }
+@keyframes set-out { to { opacity: 0; transform: translateY(-12px); } }
+@keyframes set-in { from { opacity: 0; transform: translateY(16px); } }
+@keyframes heading-pulse { 0% { background: color-mix(in srgb, var(--color-act) 35%, transparent); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) {
+  .set-out, .set-in { animation: none; }
+  .set-out { opacity: 0; }
+}
