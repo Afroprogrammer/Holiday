@@ -95,3 +95,10 @@ export function formatElapsed(startedAtIso, nowMs = Date.now()) {
   const s = String(total % 60).padStart(2, '0')
   return `${m}:${s}`
 }
+
+// Which state the active area is in (gym round 1, 2.1): the done card while
+// a rest runs, the steppers otherwise. Overtime counts as over.
+export function restPhase(rest, nowMs = Date.now()) {
+  if (!rest) return 'none'
+  return rest.endsAt > nowMs ? 'running' : 'over'
+}

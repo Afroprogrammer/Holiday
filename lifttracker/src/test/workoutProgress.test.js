@@ -5,6 +5,7 @@ import {
   formatElapsed,
   lastTimeText,
   remainingSentence,
+  restPhase,
   shortName,
 } from '../lib/workoutProgress.js'
 
@@ -159,5 +160,15 @@ describe('shortName', () => {
   it('drops the qualifier after a comma', () => {
     expect(shortName('Dips, bodyweight or assisted')).toBe('Dips')
     expect(shortName('Barbell bench press')).toBe('Barbell bench press')
+  })
+})
+
+describe('restPhase', () => {
+  const rest = { endsAt: 100_000 }
+  it('is none without a rest, running before the end, over after', () => {
+    expect(restPhase(null, 50_000)).toBe('none')
+    expect(restPhase(rest, 99_999)).toBe('running')
+    expect(restPhase(rest, 100_000)).toBe('over')
+    expect(restPhase(rest, 150_000)).toBe('over')
   })
 })
