@@ -64,12 +64,10 @@ when that exercise is the active one.
 
 ### 2.2 Reps are whole numbers
 
-The reps stepper strips everything but digits: no dot, no comma. `inputMode`
-is `numeric`. The stepper's plus and minus never produce a decimal. A pasted
-`1.5` becomes `15`? No: the field keeps only the characters typed in order
-and drops the dot, so `1.5` becomes `15` only if typed as three keys; the
-expected fix is that the dot key does nothing. `Stepper` gains a `integer`
-prop; `ActiveSet` passes it for reps.
+The reps stepper keeps digits only: a typed dot or comma is dropped, so the
+dot key does nothing. `inputMode` is `numeric`. Plus and minus never produce
+a decimal. `Stepper` gains an `integer` prop; `ActiveSet` passes it for
+reps.
 
 The weight stepper allows at most one dot and strips a second. A value of
 `.` or `5.` is treated as empty or `5` for the Done check.
