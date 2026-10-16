@@ -10,11 +10,17 @@ describe('workout screen wiring', () => {
   it('uses the short name on the hero', () => {
     expect(src).toMatch(/<h2[^>]*>\{shortName\(active\.exercise\.name\)\}<\/h2>/)
   })
-  it('passes the set id into the rest and clears the rest when that set is removed', () => {
+  it('passes the set id into the rest and removes a set through the db helper', () => {
     expect(src).toMatch(/startRest\(\{[^}]*setId: logged\.id/)
-    expect(src).toMatch(/rest\?\.setId === target\.id/)
+    expect(src).toMatch(/removeSet\(/)
   })
-  it('shows the done card while the rest runs', () => {
-    expect(src).toMatch(/phase === 'running'[\s\S]*<DoneCard/)
+  it('locks Done at the screen level so a remount cannot double-log', () => {
+    expect(src).toMatch(/busy\.current/)
+  })
+  it('shows the done card for any running rest, naming the exercise when it differs', () => {
+    expect(src).toMatch(/exerciseName=\{/)
+  })
+  it('drives the done card from the handoff hook', () => {
+    expect(src).toMatch(/useSetHandoff\(/)
   })
 })

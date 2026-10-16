@@ -23,3 +23,17 @@ describe('set corrections', () => {
     expect(await db.sets.get(set.id)).toBeUndefined()
   })
 })
+
+describe('removeSet', () => {
+  it('clears the rest it started and deletes the set in one go', async () => {
+    const { removeSet, saveActiveRest, getActiveRest } = await import('../db/workouts.js')
+    const a = await logSet({ workoutId: 'w1', exerciseId: 'dips', setNumber: 1, weight: 0, unit: 'kg', reps: 10 })
+    const b = await logSet({ workoutId: 'w1', exerciseId: 'dips', setNumber: 2, weight: 0, unit: 'kg', reps: 10 })
+    await saveActiveRest({ exerciseId: 'dips', exerciseName: 'Dips', setId: b.id, durationSeconds: 60, startedAt: 0, endsAt: 60_000 })
+    await removeSet(a.id)
+    expect(await getActiveRest()).not.toBeNull()
+    await removeSet(b.id)
+    expect(await getActiveRest()).toBeNull()
+    expect(await db.sets.get(b.id)).toBeUndefined()
+  })
+})

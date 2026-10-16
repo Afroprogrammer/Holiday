@@ -7,13 +7,14 @@ import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
 import SetEditor from '../components/SetEditor.jsx'
 import Stepper from '../components/Stepper.jsx'
 import { getSetting, setSetting, SETTING_KEYS } from '../db/settings.js'
-import { deleteSet, finishWorkout, getActiveRest, getWorkoutView, logSet, saveActiveRest, setDisplayUnit, updateSet } from '../db/workouts.js'
+import { finishWorkout, getActiveRest, getWorkoutView, logSet, removeSet, saveActiveRest, setDisplayUnit, updateSet } from '../db/workouts.js'
 import { formatSession } from '../lib/history.js'
 import { toNumber } from '../lib/numberInput.js'
 import { rangeMarker } from '../lib/prefill.js'
 import { closeRestNotifications, getRegistration, notificationPermission, requestNotificationPermission } from '../lib/restNotification.js'
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
+import { useSetHandoff } from '../lib/useSetHandoff.js'
 import { useWakeLock } from '../lib/wakeLock.js'
 import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, shortName } from '../lib/workoutProgress.js'
 
@@ -173,31 +174,19 @@ export default function Workout({ workoutId, onFinished }) {
   const [confirming, setConfirming] = useState(false)
   const [editing, setEditing] = useState(null)
   const [removing, setRemoving] = useState(null)
-  const [leaving, setLeaving] = useState(false)
-  const [entering, setEntering] = useState(false)
+  // One log at a time: ActiveSet remounts when the next row opens, so its
+  // own pending flag is not enough to stop a fast second tap.
+  const busy = useRef(false)
 
-  // When the rest ends or is skipped, let the done card leave, then bring
-  // the next set in (gym round 1, 2.1).
   const phase = restPhase(rest ?? null, now)
-  const prevPhase = useRef(phase)
-  useEffect(() => {
-    const was = prevPhase.current
-    prevPhase.current = phase
-    if (phase === 'running') {
-      setEntering(false)
-      return undefined
-    }
-    if (was !== 'running') return undefined
-    setLeaving(true)
-    const id = setTimeout(() => {
-      setLeaving(false)
-      setEntering(true)
-    }, 180)
-    return () => clearTimeout(id)
-  }, [phase])
+  // The set that started the running rest; the done card shows it for any
+  // exercise, so no Done button exists anywhere while a rest runs.
+  const loggedSets = view?.loggedSets ?? []
+  const restSet = rest ? (loggedSets.find((s) => s.id === rest.setId) ?? null) : null
+  const { card, leaving, entering } = useSetHandoff(phase, restSet)
 
   if (view === undefined || rest === undefined || view === null) return null
-  const { workout, day, slots, loggedSets } = view
+  const { workout, day, slots } = view
 
   const entries = slots.map((slot, index) => {
     const id = chosen[index] ?? defaultExerciseId(slot, loggedSets)
@@ -214,11 +203,10 @@ export default function Workout({ workoutId, onFinished }) {
   const sentence = remainingSentence(plan)
   const targetText = repsText(active.slot).replace(' reps', '')
 
-  // The set that started the running rest, shown on the done card while the
-  // exercise it belongs to is the active one.
-  const restSet = rest ? (loggedSets.find((s) => s.id === rest.setId) ?? null) : null
-  const cardSet = restSet && restSet.exerciseId === active.exercise.id ? restSet : null
-  const cardMarker = cardSet ? rangeMarker(cardSet.reps, active.slot.repMin, active.slot.repMax) : null
+  const cardSet = card
+  const cardEntry = cardSet ? plan.exercises.find((e) => e.exercise.id === cardSet.exerciseId) : null
+  const cardMarker = cardSet && cardEntry ? rangeMarker(cardSet.reps, cardEntry.slot.repMin, cardEntry.slot.repMax) : null
+  const cardExerciseName = cardSet && cardSet.exerciseId !== active.exercise.id ? shortName(cardEntry?.exercise.name ?? rest?.exerciseName ?? '') : null
 
   const finish = async () => {
     await saveActiveRest(null)
@@ -228,10 +216,16 @@ export default function Workout({ workoutId, onFinished }) {
   }
 
   const done = async (setNumber, values) => {
-    const logged = await logSet({ workoutId: workout.id, exerciseId: active.exercise.id, setNumber, ...values })
-    await saveActiveRest(
-      startRest({ exerciseId: active.exercise.id, exerciseName: shortName(active.exercise.name), restSeconds: active.exercise.restSeconds, setId: logged.id }),
-    )
+    if (busy.current) return
+    busy.current = true
+    try {
+      const logged = await logSet({ workoutId: workout.id, exerciseId: active.exercise.id, setNumber, ...values })
+      await saveActiveRest(
+        startRest({ exerciseId: active.exercise.id, exerciseName: shortName(active.exercise.name), restSeconds: active.exercise.restSeconds, setId: logged.id }),
+      )
+    } finally {
+      busy.current = false
+    }
     getRegistration().then(closeRestNotifications)
     if (notificationPermission() === 'default' && askedPref === false) setAskingNotify(true)
   }
@@ -250,8 +244,7 @@ export default function Workout({ workoutId, onFinished }) {
     const target = removing
     setRemoving(null)
     setEditing(null)
-    if (rest?.setId === target.id) await saveActiveRest(null)
-    await deleteSet(target.id)
+    await removeSet(target.id)
   }
 
   const toggleSkip = (exerciseId, setNumber, on) =>
@@ -273,14 +266,17 @@ export default function Workout({ workoutId, onFinished }) {
   // After this rest the next set is the row that is open now.
   const nextSet = rest && activeRow ? { exerciseName: shortName(active.exercise.name), setNumber: activeRow.n, total: active.total } : null
 
-  const editorFor = (set) => (
-    <SetEditor set={set} exercise={active.exercise} targetText={targetText} onSave={(v) => saveEdit(set, v)} onCancel={() => setEditing(null)} onRemove={() => setRemoving(set)} />
-  )
+  const editorFor = (set) => {
+    const entry = plan.exercises.find((e) => e.exercise.id === set.exerciseId) ?? active
+    return (
+      <SetEditor set={set} exercise={entry.exercise} targetText={repsText(entry.slot).replace(' reps', '')} onSave={(v) => saveEdit(set, v)} onCancel={() => setEditing(null)} onRemove={() => setRemoving(set)} />
+    )
+  }
 
-  const showCard = (phase === 'running' || leaving) && cardSet !== null
+  const showCard = cardSet !== null
   let activeArea
   if (cardSet && editing === cardSet.id) activeArea = editorFor(cardSet)
-  else if (showCard) activeArea = <DoneCard set={cardSet} marker={cardMarker} leaving={leaving} onEdit={() => setEditing(cardSet.id)} onSkipRest={skipRest} />
+  else if (showCard) activeArea = <DoneCard set={cardSet} marker={cardMarker} exerciseName={cardExerciseName} leaving={leaving} onEdit={() => setEditing(cardSet.id)} onSkipRest={skipRest} />
   else if (activeRow && editing === null)
     activeArea = (
       <ActiveSet

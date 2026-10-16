@@ -107,3 +107,13 @@ export async function updateSet(id, { weight, unit, reps }) {
 export async function deleteSet(id) {
   await db.sets.delete(id)
 }
+
+// Removes a logged set. If that set started the running rest, the rest is
+// cleared in the same transaction so no rest runs without its set.
+export async function removeSet(id) {
+  await db.transaction('rw', db.sets, db.settings, async () => {
+    const row = await db.settings.get('activeRest')
+    if (row?.value?.setId === id) await db.settings.delete('activeRest')
+    await db.sets.delete(id)
+  })
+}

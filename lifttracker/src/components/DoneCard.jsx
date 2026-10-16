@@ -1,9 +1,11 @@
 // Shown in the active area while a rest runs (gym round 1, 2.1): the set
 // just logged, with no way to log another until the rest ends.
-export default function DoneCard({ set, marker, leaving = false, onEdit, onSkipRest }) {
+export default function DoneCard({ set, marker, exerciseName = null, leaving = false, onEdit, onSkipRest }) {
   return (
     <section className={`mt-5 ${leaving ? 'set-out' : ''}`}>
-      <h3 className="font-num text-[22px] font-bold uppercase tracking-wide text-act">Set {set.setNumber} logged</h3>
+      <h3 className="font-num text-[22px] font-bold uppercase tracking-wide text-act">
+        {exerciseName ? `${exerciseName} · ` : ''}Set {set.setNumber} logged
+      </h3>
       <div className="mt-2 flex items-baseline gap-3">
         <span className="font-num text-[44px] font-bold leading-none tracking-tight">
           {set.weight} {set.unit} × {set.reps}
