@@ -59,3 +59,17 @@ describe('backupFilename', () => {
     expect(backupFilename(new Date('2026-10-12T15:00:00Z'))).toBe('lifttracker-2026-10-12.json')
   })
 })
+
+describe('parseBackup and workout state fields', () => {
+  it('keeps skipped, extra and chosen on workouts and accepts old backups without them', () => {
+    const withFields = {
+      ...tables,
+      workouts: [{ id: 'w', programDayId: 'push-a', startedAt: '2026-10-17T10:00:00Z', finishedAt: null, skipped: { a: [2] }, extra: { a: 1 }, chosen: { 0: 'a' } }],
+    }
+    const parsed = parseBackup(serializeBackup(withFields))
+    expect(parsed.ok).toBe(true)
+    expect(parsed.data.workouts[0].chosen).toEqual({ 0: 'a' })
+    expect(parsed.data.workouts[0].skipped).toEqual({ a: [2] })
+    expect(parseBackup(serializeBackup(tables)).ok).toBe(true)
+  })
+})

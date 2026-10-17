@@ -54,8 +54,11 @@ claim any of these three.
 
 Phase 1, as specified in `lifttracker/prd.md`:
 
-- Home screen with the next day, the last completed workout, a start action,
-  an override to start a different day, and a settings link.
+- Home screen: a swipe pager with one poster per program day, opening on the
+  day up next, each with its last completed date and last-time numbers, a
+  start action for the day on screen, and a settings link. While a workout
+  runs, Home shows a live Resume card with the set count, elapsed time and
+  rest state, and a Discard action behind a confirmation sheet.
 - Active workout screen: one card per exercise, a toggle for slots with
   alternatives, set rows prefilled from the last session, weight and reps with
   steppers, Done per set, a done card during the rest, edit or remove a
@@ -64,7 +67,11 @@ Phase 1, as specified in `lifttracker/prd.md`:
 - Automatic rest timer that survives screen lock and shows overtime.
 - Per-exercise display unit with the other unit shown beside it. Weight is
   stored exactly as entered, with its unit.
-- The active workout is saved as you go and resumes when you return.
+- The active workout is saved as you go, including skipped sets, added sets
+  and the alternative chosen per slot. The workout has its own route, so the
+  Android back gesture (or the Home link) returns Home with the workout still
+  running, and Resume brings it back. A rest that ends on any screen still
+  buzzes and notifies.
 - Settings: default rest durations, per-exercise overrides, reset cycle.
 - Android install support: the screen stays on during a workout, a rest that
   ends while the app is in the background raises a notification, Home offers

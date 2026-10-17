@@ -107,49 +107,7 @@ short names.
 
 ## 3. Round 2: Home and navigation
 
-### 3.1 Swipe between days on Home
-
-Home becomes a horizontal pager with one page per program day, in cycle
-order. It opens on the day up next. Swiping left or right moves one page;
-the day name, illustration strip, "last completed" line (that day's most
-recent finished workout), "<first exercise> last time" line and the Start
-button all belong to the page. The cycle bar keeps its meaning (where the
-cycle is) and does not move with the pager; the page's day name is the
-indicator. Pages snap (`scroll-snap-type: x mandatory`), no custom gesture
-code. The "Start a different day" button and sheet are removed from Home;
-Settings "Cycle position" stays.
-
-Starting a swiped day behaves as today: the cycle position moves only when
-that workout is finished.
-
-### 3.2 Leave a workout and come back
-
-The workout screen gets a hash route, `#workout`. Starting or resuming a
-workout navigates to it. The Android back gesture, the browser back button
-and a new `‹ Home` link in the workout header all return to Home. Settings
-opened from the workout returns to the workout.
-
-Home with a workout in progress shows a **Resume card** in place of the
-Start button: `Resume Push A` as the primary button, caption
-`7 / 16 sets · 14 min · resting 0:42` (live). The day pager is still
-swipeable but every page's Start button is replaced by the Resume card, with
-a second ghost action **Discard workout** behind a sheet: "Discard Push A?
-7 logged sets are deleted." Buttons "Keep" (amber) and "Discard" (ghost,
-flag). Discard deletes the workout and its sets and clears the rest.
-
-Skipped set numbers and added sets move from React state into the workout
-record: `workout.skipped` (`{ [exerciseId]: number[] }`) and
-`workout.extra` (`{ [exerciseId]: number }`), written on each change. The
-Dexie schema stays at version 1 (no new index). Existing in-progress
-workouts without these fields read as empty.
-
-The rest dock is not shown on Home; the Resume card's caption carries the
-countdown. The background notification still fires from the dock's effect
-only while the workout screen is mounted, so a rest that ends while the
-user is on Home signals through the Resume card turning amber for 2.5 s and
-the in-app vibration; the system notification is also sent from Home when
-permitted (same `showRestNotification` call, driven by a small
-`useRestWatcher` hook that both screens use).
+Superseded by `2026-10-17-lifttracker-gym-round-2-design.md`.
 
 ## 4. Data changes
 
