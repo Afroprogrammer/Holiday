@@ -126,3 +126,7 @@ body {
   .set-out, .set-in { animation: none; }
   .set-out { opacity: 0; }
 }
+
+/* Home day pager (gym round 2, 3.1): native snap scrolling, no scrollbar. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

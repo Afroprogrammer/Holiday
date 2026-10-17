@@ -14,30 +14,22 @@ export async function getProgramDays() {
   return db.programDays.orderBy('order').toArray()
 }
 
-// The most recently finished workout, with its program day attached.
-export async function getLastFinishedWorkout() {
+// The newest finished workout per program day, keyed by day id.
+async function lastFinishedByDay() {
   const workouts = await db.workouts.orderBy('finishedAt').reverse().toArray()
-  const last = workouts.find((w) => w.finishedAt)
-  if (!last) return null
-  const day = await db.programDays.get(last.programDayId)
-  return { ...last, programDay: day }
+  const byDay = new Map()
+  for (const w of workouts) {
+    if (w.finishedAt && !byDay.has(w.programDayId)) byDay.set(w.programDayId, w)
+  }
+  return byDay
 }
 
-// Everything the home screen shows: the next day, the cycle, the last
-// finished workout, one illustration per slot, and the first exercise's last
-// session for the "last time" line.
-export async function getHomeView() {
-  const [nextDay, days, lastWorkout, exercises] = await Promise.all([
-    getNextProgramDay(),
-    getProgramDays(),
-    getLastFinishedWorkout(),
-    db.exercises.toArray(),
-  ])
-  const exercisesById = new Map(exercises.map((e) => [e.id, e]))
-  if (!nextDay) return { nextDay, days, lastWorkout, exercisesById, firstExercise: null, firstSession: null, stripSlugs: [] }
-
+// One poster per program day for the Home pager (gym round 2, 3.1): the
+// illustration strip, that day's last finished workout, and the first
+// exercise's last session for the "last time" line.
+async function dayEntry(day, exercisesById, lastByDay) {
   const stripSlugs = []
-  for (const slot of nextDay.slots) {
+  for (const slot of day.slots) {
     let pick = slot.exerciseIds[0]
     let latest = null
     for (const id of slot.exerciseIds) {
@@ -50,17 +42,23 @@ export async function getHomeView() {
     }
     stripSlugs.push(exercisesById.get(pick)?.illustration)
   }
-  const firstExercise = exercisesById.get(nextDay.slots[0].exerciseIds[0]) ?? null
+  const firstExercise = exercisesById.get(day.slots[0].exerciseIds[0]) ?? null
   const firstSets = firstExercise ? await getPreviousSets(firstExercise.id, null) : []
   return {
-    nextDay,
-    days,
-    lastWorkout,
-    exercisesById,
+    day,
+    stripSlugs,
     firstExercise,
     firstSession: firstSets.length > 0 ? { sets: [...firstSets].sort((a, b) => a.setNumber - b.setNumber) } : null,
-    stripSlugs,
+    lastWorkout: lastByDay.get(day.id) ?? null,
   }
+}
+
+export async function getHomeView() {
+  const [nextDay, programDays, exercises, lastByDay] = await Promise.all([getNextProgramDay(), getProgramDays(), db.exercises.toArray(), lastFinishedByDay()])
+  const exercisesById = new Map(exercises.map((e) => [e.id, e]))
+  const days = []
+  for (const day of programDays) days.push(await dayEntry(day, exercisesById, lastByDay))
+  return { nextDay, days, exercisesById }
 }
 
 // The running workout for App and Home (gym round 2, 3.3): enough to build

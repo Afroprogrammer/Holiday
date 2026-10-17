@@ -24,3 +24,31 @@ describe('getActiveView', () => {
     expect(view.exercisesById.get('barbell-bench-press').name).toMatch(/bench/i)
   })
 })
+
+describe('getHomeView per day', () => {
+  beforeEach(async () => {
+    await db.workouts.clear()
+    await db.sets.clear()
+    await db.settings.clear()
+    await seedIfEmpty()
+  })
+
+  it('returns one entry per day with that day’s last workout and first-exercise session', async () => {
+    const { getHomeView } = await import('../db/queries.js')
+    const { finishWorkout, logSet, startWorkout } = await import('../db/workouts.js')
+    const w = await startWorkout('push-a')
+    await logSet({ workoutId: w.id, exerciseId: 'barbell-bench-press', setNumber: 1, weight: 60, unit: 'kg', reps: 8 })
+    await finishWorkout(w.id)
+    const view = await getHomeView()
+    expect(view.days).toHaveLength(4)
+    expect(view.days.map((d) => d.day.id)).toEqual(['push-a', 'pull-a', 'push-b', 'pull-b'])
+    expect(view.days[0].lastWorkout.programDayId).toBe('push-a')
+    expect(view.days[1].lastWorkout).toBeNull()
+    expect(view.days[0].firstSession.sets).toHaveLength(1)
+    expect(view.days[1].firstSession).toBeNull()
+    expect(view.days[0].stripSlugs).toHaveLength(view.days[0].day.slots.length)
+    expect(view.days[0].firstExercise.id).toBe('barbell-bench-press')
+    expect(view.nextDay.id).toBe('pull-a')
+    expect(view.exercisesById.get('deadlift')).toBeTruthy()
+  })
+})
