@@ -66,23 +66,14 @@ describe('App router', () => {
     expect(window.location.hash).toBe('')
   })
 
-  it('pushes #workout once on cold open with an active workout, and renders Home after a back', async () => {
+  it('cold open with a running workout lands on Home and pushes nothing', async () => {
     live.active = ACTIVE
     const before = history.length
-    const { rerender } = render(<App />)
+    render(<App />)
     await act(async () => {})
-    expect(window.location.hash).toBe('#workout')
-    expect(history.length).toBe(before + 1)
-    rerender(<App />)
-    await act(async () => {})
-    expect(history.length).toBe(before + 1)
-    // jsdom fires hashchange on a later task.
-    await act(async () => {
-      window.location.hash = ''
-      await new Promise((r) => setTimeout(r, 0))
-    })
     expect(screen.getByText('home')).toBeTruthy()
     expect(window.location.hash).toBe('')
+    expect(history.length).toBe(before)
   })
 
   it('holds the wake lock only while a workout is active', () => {

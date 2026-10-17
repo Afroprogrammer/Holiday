@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import Home from './screens/Home.jsx'
 import Workout from './screens/Workout.jsx'
@@ -36,7 +36,6 @@ export default function App() {
   const notifyPref = useLiveQuery(() => getSetting(SETTING_KEYS.restNotification))
   // Registered here so the worker is set up whichever screen opens first.
   const update = useAppUpdate()
-  const booted = useRef(false)
 
   useWakeLock(Boolean(active) && keepScreenOn !== false)
   const liveRest = active ? (rest ?? null) : null
@@ -45,13 +44,10 @@ export default function App() {
   const flash = useRestWatcher(liveRest, { notify, nextSet })
 
   const onWorkout = hash === WORKOUT_HASH
-  // Cold open with a workout running opens on it, as before, and pushes
-  // the entry so one back gesture still returns Home.
-  useEffect(() => {
-    if (active === undefined || booted.current) return
-    booted.current = true
-    if (active && hash === '') enterWorkout()
-  }, [active, hash])
+  // A cold open with a workout running lands on Home's Resume card. The
+  // #workout entry is only ever pushed from a tap: Chrome skips entries
+  // pushed without user activation when the back gesture runs, which
+  // would close the app instead of returning Home.
   // #workout with nothing running (finished, discarded, stale link) is Home.
   useEffect(() => {
     if (onWorkout && active === null) replaceHash('')

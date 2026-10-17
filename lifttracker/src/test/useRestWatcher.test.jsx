@@ -50,6 +50,19 @@ describe('useRestWatcher', () => {
     expect(screen.getByText('calm')).toBeTruthy()
   })
 
+  it('does not fire for an ended rest that arrives after mount (queries load late)', () => {
+    const { rerender } = render(<Probe rest={null} />)
+    const rest = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, NOW - 10_000)
+    rerender(<Probe rest={rest} />)
+    act(() => vi.advanceTimersByTime(1_000))
+    expect(signalRestOver).not.toHaveBeenCalled()
+    expect(screen.getByText('calm')).toBeTruthy()
+    const fresh = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, Date.now())
+    rerender(<Probe rest={fresh} />)
+    act(() => vi.advanceTimersByTime(2_250))
+    expect(signalRestOver).toHaveBeenCalledTimes(1)
+  })
+
   it('sends the notification only when notify is true', async () => {
     const next = { exerciseName: 'Deadlift', setNumber: 2, total: 3 }
     const rest = startRest({ exerciseId: 'deadlift', exerciseName: 'Deadlift', restSeconds: 2 }, NOW)

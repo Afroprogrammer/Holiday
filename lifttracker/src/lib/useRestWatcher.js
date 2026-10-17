@@ -23,13 +23,19 @@ export function useNow(active, ms = 250) {
 // mounted (gym round 2, 3.5): the system notification when allowed (Android
 // vibrates it reliably), the in-app vibration and beeps, and `flash` for
 // FLASH_MS. Mounted once in App, so the signal happens whichever screen
-// shows. A rest already over at mount (the app reopened late) shows
-// overtime without firing again.
+// shows. A rest that is already over when it first arrives (the app
+// reopened late; the queries load after the first render) shows overtime
+// without firing again.
 export function useRestWatcher(rest, { notify = false, nextSet = null } = {}) {
   const now = useNow(Boolean(rest))
   const [flash, setFlash] = useState(false)
   const over = rest ? rest.endsAt <= now : false
-  const firedFor = useRef(rest && rest.endsAt <= Date.now() ? rest.endsAt : null)
+  const firedFor = useRef(null)
+  const seen = useRef(null)
+  if (rest && seen.current !== rest.endsAt) {
+    seen.current = rest.endsAt
+    if (rest.endsAt <= Date.now()) firedFor.current = rest.endsAt
+  }
 
   useEffect(() => {
     if (!rest || !over || firedFor.current === rest.endsAt) return
