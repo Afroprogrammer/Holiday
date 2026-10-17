@@ -1,53 +1,84 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import CycleBar from '../components/CycleBar.jsx'
-import DaySheet from '../components/DaySheet.jsx'
-import Illustration from '../components/Illustration.jsx'
+import BottomSheet from '../components/BottomSheet.jsx'
+import DayPage from '../components/DayPage.jsx'
+import ResumeCard from '../components/ResumeCard.jsx'
 import UpdateBanner from '../components/UpdateBanner.jsx'
 import { getHomeView } from '../db/queries.js'
-import { formatSession } from '../lib/history.js'
+import { discardWorkout } from '../db/workouts.js'
 import { useInstallPrompt } from '../lib/install.js'
-import { formatShortDate } from '../lib/format.js'
-import { shortName } from '../lib/workoutProgress.js'
+import { closeRestNotifications, getRegistration } from '../lib/restNotification.js'
+import { activeSummary } from '../lib/workoutProgress.js'
 
-// Home ("Poster"): the next day as a poster, the cycle, today's exercises as
-// a strip of figures, and what you did last time. Start is pinned to the
-// bottom with the day override behind a sheet.
-export default function Home({ onStart, update }) {
+function useTicker(ms, on) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!on) return undefined
+    const id = setInterval(() => setNow(Date.now()), ms)
+    return () => clearInterval(id)
+  }, [ms, on])
+  return now
+}
+
+function discardCopy(count) {
+  if (count === 0) return 'Nothing was logged. Cycle position stays.'
+  return count === 1 ? '1 logged set is deleted. Cycle position stays.' : `${count} logged sets are deleted. Cycle position stays.`
+}
+
+// Home ("Poster", gym round 2): a swipe pager with one poster per program
+// day, the cycle bar, and Start for the day on screen. With a workout
+// running the bottom area is the Resume card instead.
+export default function Home({ active, rest, flash = false, update, onStart, onResume }) {
   const view = useLiveQuery(getHomeView)
-  const [picking, setPicking] = useState(false)
+  const now = useTicker(1000, Boolean(active))
+  const [page, setPage] = useState(null)
+  const [discarding, setDiscarding] = useState(false)
+  const pager = useRef(null)
   const { canInstall, installed, install } = useInstallPrompt()
+
+  const nextIndex = view ? Math.max(0, view.days.findIndex((d) => d.day.id === view.nextDay?.id)) : 0
+  // Open on the day up next, once the pages exist.
+  useEffect(() => {
+    if (!view || page !== null) return
+    setPage(nextIndex)
+    pager.current?.scrollTo({ left: nextIndex * pager.current.clientWidth, behavior: 'instant' })
+  }, [view, page, nextIndex])
+
   if (view === undefined) return null
-  const { nextDay, days, lastWorkout, exercisesById, firstExercise, firstSession, stripSlugs } = view
-  const [dayWord, dayLetter] = (nextDay?.name ?? '–').split(' ')
+  const { nextDay, days } = view
+  const programDays = days.map((d) => d.day)
+  const current = days[page ?? nextIndex] ?? days[0]
+  const summary = active ? activeSummary({ ...active, rest, now }) : null
+
+  const onScroll = (e) => {
+    const el = e.currentTarget
+    if (el.clientWidth > 0) setPage(Math.min(days.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth))))
+  }
+
+  const confirmDiscard = async () => {
+    setDiscarding(false)
+    await discardWorkout(active.workout.id)
+    getRegistration().then(closeRestNotifications)
+  }
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <div className="flex-1 px-5 pt-3.5">
-        <header className="flex h-11 items-center justify-between">
+      <div className="flex-1 pt-3.5">
+        <header className="flex h-11 items-center justify-between px-5">
           <span className="font-num text-lg font-bold uppercase tracking-wide">LiftTracker</span>
           <a href="#settings" className="inline-flex h-11 items-center font-semibold text-act">
             Settings
           </a>
         </header>
-        <UpdateBanner ready={update?.ready ?? false} apply={update?.apply} />
+        <div className="px-5">{!active && <UpdateBanner ready={update?.ready ?? false} apply={update?.apply} />}</div>
 
-        <section className="mt-7">
-          <p className="text-[15px] font-medium text-ink-2">
-            Up next · day {nextDay?.order ?? '–'} of {days.length}
-          </p>
-          <h1 className="mt-1.5 font-num text-[92px] font-bold uppercase leading-[0.92] tracking-tight">
-            {dayWord}
-            {dayLetter && <span className="ml-2.5 text-act">{dayLetter}</span>}
-          </h1>
-          <CycleBar days={days} nextDayId={nextDay?.id} />
-          <div className="-mx-1 mt-6 flex gap-1">
-            {stripSlugs.map((slug, i) => (
-              <span key={i} className="flex flex-1 justify-center">
-                <Illustration slug={slug} size={68} tone="ink-2" />
-              </span>
-            ))}
-          </div>
+        <div ref={pager} onScroll={onScroll} aria-roledescription="carousel" className="no-scrollbar mt-7 flex snap-x snap-mandatory overflow-x-auto">
+          {days.map((entry) => (
+            <DayPage key={entry.day.id} entry={entry} days={programDays} nextDayId={nextDay?.id} upNext={entry.day.id === nextDay?.id} />
+          ))}
+        </div>
+
+        <div className="px-5">
           {canInstall && !installed && (
             <div className="mt-5 flex items-center gap-3 rounded-2xl border border-rule bg-card px-4 py-3">
               <span className="min-w-0 flex-1">
@@ -59,41 +90,30 @@ export default function Home({ onStart, update }) {
               </button>
             </div>
           )}
-          <dl className="mt-6 border-t border-rule pt-4 text-[15px] text-ink-2">
-            <div className="flex items-baseline justify-between">
-              <dt>Last completed</dt>
-              <dd className="font-semibold text-ink">{lastWorkout ? `${lastWorkout.programDay?.name} · ${formatShortDate(lastWorkout.finishedAt)}` : '–'}</dd>
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <dt>{firstExercise ? `${shortName(firstExercise.name)} last time` : 'Last time'}</dt>
-              <dd className="font-num text-[19px] font-semibold text-ink">{firstSession ? formatSession(firstSession.sets) : '–'}</dd>
-            </div>
-          </dl>
-        </section>
+        </div>
       </div>
 
       <div className="sticky bottom-0 flex flex-col gap-2.5 bg-linear-to-t from-canvas from-70% to-transparent px-5 pt-3 pb-[calc(20px+env(safe-area-inset-bottom,0px))]">
-        <button type="button" onClick={() => onStart?.(nextDay)} disabled={!nextDay} className="h-[60px] rounded-2xl bg-act text-lg font-semibold text-on-act">
-          Start {nextDay?.name}
-        </button>
-        <button type="button" onClick={() => setPicking(true)} className="h-[52px] rounded-2xl border border-rule font-semibold text-ink-2">
-          Start a different day
-        </button>
+        {active ? (
+          <ResumeCard summary={summary} dayName={active.day.name} flash={flash} onResume={onResume} onDiscard={() => setDiscarding(true)} />
+        ) : (
+          <button type="button" onClick={() => onStart?.(current.day)} disabled={!current} className="h-[60px] rounded-2xl bg-act text-lg font-semibold text-on-act">
+            Start {current?.day.name}
+          </button>
+        )}
       </div>
 
-      <DaySheet
-        open={picking}
-        days={days}
-        exercisesById={exercisesById}
-        nextDayId={nextDay?.id}
-        title="Start a different day"
-        copy="Cycle position moves only when you finish the workout."
-        onPick={(day) => {
-          setPicking(false)
-          onStart?.(day)
-        }}
-        onClose={() => setPicking(false)}
-      />
+      {active && (
+        <BottomSheet open={discarding} title={`Discard ${active.day.name}?`} onClose={() => setDiscarding(false)}>
+          <p className="mt-1 mb-3.5 text-[15px] text-ink-2">{discardCopy(active.loggedSets.length)}</p>
+          <button type="button" onClick={() => setDiscarding(false)} className="mb-2.5 h-[60px] w-full rounded-2xl bg-act text-lg font-semibold text-on-act">
+            Keep
+          </button>
+          <button type="button" onClick={confirmDiscard} className="h-[52px] w-full rounded-2xl border border-rule font-semibold text-flag">
+            Discard
+          </button>
+        </BottomSheet>
+      )}
     </main>
   )
 }

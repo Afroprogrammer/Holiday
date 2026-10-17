@@ -7,16 +7,16 @@ import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
 import SetEditor from '../components/SetEditor.jsx'
 import Stepper from '../components/Stepper.jsx'
 import { getSetting, setSetting, SETTING_KEYS } from '../db/settings.js'
-import { finishWorkout, getActiveRest, getWorkoutView, logSet, removeSet, saveActiveRest, setDisplayUnit, updateSet } from '../db/workouts.js'
+import { finishWorkout, getActiveRest, getWorkoutView, logSet, removeSet, saveActiveRest, setDisplayUnit, updateSet, updateWorkoutState } from '../db/workouts.js'
 import { formatSession } from '../lib/history.js'
+import { leaveWorkout } from '../lib/nav.js'
 import { toNumber } from '../lib/numberInput.js'
 import { rangeMarker } from '../lib/prefill.js'
 import { closeRestNotifications, getRegistration, notificationPermission, requestNotificationPermission } from '../lib/restNotification.js'
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
 import { useSetHandoff } from '../lib/useSetHandoff.js'
-import { useWakeLock } from '../lib/wakeLock.js'
-import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, shortName } from '../lib/workoutProgress.js'
+import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, shortName, skippedSets } from '../lib/workoutProgress.js'
 
 // Picks which alternative a slot shows today: the one already logged in this
 // workout, else the one with the most recent history, else the first.
@@ -158,18 +158,15 @@ function SetRows({ plan, editingId, hiddenId, editor, onEdit, onSkip, onUnskip, 
   )
 }
 
-export default function Workout({ workoutId, onFinished }) {
+// `flash` is App's rest-end moment (the watcher hook); the dock paints it.
+// Skipped, extra and chosen live on the workout record (gym round 2, 3.4)
+// so leaving the screen or reloading keeps them.
+export default function Workout({ workoutId, flash = false }) {
   const view = useLiveQuery(() => getWorkoutView(workoutId), [workoutId])
   const rest = useLiveQuery(getActiveRest)
-  const keepScreenOn = useLiveQuery(() => getSetting(SETTING_KEYS.keepScreenOn))
-  useWakeLock(keepScreenOn !== false)
-  const notifyPref = useLiveQuery(() => getSetting(SETTING_KEYS.restNotification))
   const askedPref = useLiveQuery(() => getSetting(SETTING_KEYS.restNotificationAsked))
   const [askingNotify, setAskingNotify] = useState(false)
   const now = useTicker(1000)
-  const [chosen, setChosen] = useState({})
-  const [skipped, setSkipped] = useState({})
-  const [extra, setExtra] = useState({})
   const [focus, setFocus] = useState(null)
   const [confirming, setConfirming] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -185,14 +182,30 @@ export default function Workout({ workoutId, onFinished }) {
   const restSet = rest ? (loggedSets.find((s) => s.id === rest.setId) ?? null) : null
   const { card, leaving, entering } = useSetHandoff(phase, restSet)
 
-  if (view === undefined || rest === undefined || view === null) return null
-  const { workout, day, slots } = view
-
-  const entries = slots.map((slot, index) => {
-    const id = chosen[index] ?? defaultExerciseId(slot, loggedSets)
+  const workout = view?.workout ?? null
+  const chosen = workout?.chosen ?? {}
+  const skipped = skippedSets(workout?.skipped)
+  const extra = workout?.extra ?? {}
+  const entries = (view?.slots ?? []).map((slot, index) => {
+    const stored = chosen[index]
+    const id = stored && slot.exerciseIds.includes(stored) ? stored : defaultExerciseId(slot, loggedSets)
     const exercise = slot.options.find((o) => o.id === id)
     return { slot, exercise, previousSets: slot.previousBy[exercise.id], index }
   })
+
+  // The resolved alternatives are written back once per workout so Home's
+  // resume count and a reload read the same pick (gym round 2, 3.4).
+  const resolvedFor = useRef(null)
+  useEffect(() => {
+    if (!workout || resolvedFor.current === workout.id) return
+    resolvedFor.current = workout.id
+    const resolved = Object.fromEntries(entries.map((e) => [e.index, e.exercise.id]))
+    if (entries.some((e) => chosen[e.index] !== e.exercise.id)) updateWorkoutState(workout.id, { chosen: { ...chosen, ...resolved } })
+  })
+
+  if (view === undefined || rest === undefined || view === null) return null
+  const { day } = view
+
   const plan = buildPlan(entries, loggedSets, skipped, extra, focus)
   const position = activePosition(plan)
   const activeIndex = position?.exerciseIndex ?? plan.exercises.length - 1
@@ -212,7 +225,7 @@ export default function Workout({ workoutId, onFinished }) {
     await saveActiveRest(null)
     await finishWorkout(workout.id)
     setConfirming(false)
-    onFinished?.()
+    leaveWorkout()
   }
 
   const done = async (setNumber, values) => {
@@ -247,13 +260,14 @@ export default function Workout({ workoutId, onFinished }) {
     await removeSet(target.id)
   }
 
-  const toggleSkip = (exerciseId, setNumber, on) =>
-    setSkipped((s) => {
-      const next = new Set(s[exerciseId] ?? [])
-      if (on) next.add(setNumber)
-      else next.delete(setNumber)
-      return { ...s, [exerciseId]: next }
-    })
+  const toggleSkip = (exerciseId, setNumber, on) => {
+    const next = new Set(skipped[exerciseId] ?? [])
+    if (on) next.add(setNumber)
+    else next.delete(setNumber)
+    updateWorkoutState(workout.id, { skipped: { ...workout.skipped, [exerciseId]: [...next].sort((a, b) => a - b) } })
+  }
+  const addSet = (exerciseId) => updateWorkoutState(workout.id, { extra: { ...extra, [exerciseId]: (extra[exerciseId] ?? 0) + 1 } })
+  const choose = (slotIndex, exerciseId) => updateWorkoutState(workout.id, { chosen: { ...chosen, [slotIndex]: exerciseId } })
 
   // Backdrop, Escape and "Not now" all mean the same thing: never ask again.
   const declineNotify = async () => {
@@ -262,9 +276,6 @@ export default function Workout({ workoutId, onFinished }) {
   }
 
   const nextSlug = rest && activeRow ? active.exercise.illustration : undefined
-  const notify = notifyPref !== false && notificationPermission() === 'granted'
-  // After this rest the next set is the row that is open now.
-  const nextSet = rest && activeRow ? { exerciseName: shortName(active.exercise.name), setNumber: activeRow.n, total: active.total } : null
 
   const editorFor = (set) => {
     const entry = plan.exercises.find((e) => e.exercise.id === set.exerciseId) ?? active
@@ -296,8 +307,20 @@ export default function Workout({ workoutId, onFinished }) {
   return (
     <main className="min-h-dvh px-5 pt-3.5" style={{ paddingBottom: (rest ? DOCK_HEIGHT.resting : DOCK_HEIGHT.idle) + 16 }}>
       <header className="flex h-11 items-center justify-between text-sm font-medium text-ink-2">
-        <span>
-          {day.name} · {formatElapsed(workout.startedAt, now)}
+        <span className="flex items-center gap-2">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              leaveWorkout()
+            }}
+            className="inline-flex h-11 items-center font-semibold text-act"
+          >
+            ‹ Home
+          </a>
+          <span>
+            {day.name} · {formatElapsed(workout.startedAt, now)}
+          </span>
         </span>
         <span className="font-num font-semibold tracking-wide">
           <b className="text-[17px] text-ink">{plan.done}</b> / {plan.total} sets
@@ -319,7 +342,7 @@ export default function Workout({ workoutId, onFinished }) {
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => setChosen((c) => ({ ...c, [entries[activeIndex].index]: option.id }))}
+                  onClick={() => choose(entries[activeIndex].index, option.id)}
                   className={`h-11 flex-1 px-2 ${option.id === active.exercise.id ? 'bg-act font-semibold text-on-act' : 'text-ink-2'}`}
                 >
                   {shortName(option.name)}
@@ -341,7 +364,7 @@ export default function Workout({ workoutId, onFinished }) {
         onEdit={(set) => setEditing(set.id)}
         onSkip={(n) => toggleSkip(active.exercise.id, n, true)}
         onUnskip={(n) => toggleSkip(active.exercise.id, n, false)}
-        onAddSet={() => setExtra((e) => ({ ...e, [active.exercise.id]: (e[active.exercise.id] ?? 0) + 1 }))}
+        onAddSet={() => addSet(active.exercise.id)}
       />
 
       {queue.length > 0 && (
@@ -387,7 +410,7 @@ export default function Workout({ workoutId, onFinished }) {
         </button>
       </div>
 
-      <RestDock rest={rest} nextSlug={nextSlug} nextSet={nextSet} notify={notify} onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))} onSkip={skipRest} />
+      <RestDock rest={rest} nextSlug={nextSlug} flash={flash} onAdjust={(delta) => saveActiveRest(adjustRest(rest, delta))} onSkip={skipRest} />
 
       <BottomSheet open={confirming} title={`Finish ${day.name}?`} onClose={() => setConfirming(false)}>
         <p className="mt-1 mb-3.5 text-[15px] text-ink-2">{sentence}</p>

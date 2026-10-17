@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
+import { startRest } from '../lib/timer.js'
 import {
   activePosition,
+  activeSummary,
   buildPlan,
+  elapsedMinutes,
   formatElapsed,
+  resolveChosen,
+  skippedSets,
   lastTimeText,
   remainingSentence,
   restPhase,
@@ -170,5 +175,53 @@ describe('restPhase', () => {
     expect(restPhase(rest, 99_999)).toBe('running')
     expect(restPhase(rest, 100_000)).toBe('over')
     expect(restPhase(rest, 150_000)).toBe('over')
+  })
+})
+
+describe('round 2 helpers', () => {
+  it('skippedSets converts arrays and tolerates undefined', () => {
+    expect(skippedSets(undefined)).toEqual({})
+    expect(skippedSets({ a: [1, 3] }).a.has(3)).toBe(true)
+    expect(skippedSets({ a: [1, 3] }).a.has(2)).toBe(false)
+  })
+
+  it('resolveChosen prefers chosen, then logged, then first', () => {
+    const day = { slots: [{ exerciseIds: ['x', 'y'] }, { exerciseIds: ['p', 'q'] }, { exerciseIds: ['m'] }] }
+    const loggedQ = [{ exerciseId: 'q', setNumber: 1 }]
+    expect(resolveChosen(day, { chosen: { 0: 'y' } }, loggedQ)).toEqual(['y', 'q', 'm'])
+    expect(resolveChosen(day, { chosen: { 0: 'zzz' } }, [])).toEqual(['x', 'p', 'm'])
+    expect(resolveChosen(day, {}, [])).toEqual(['x', 'p', 'm'])
+  })
+
+  it('elapsedMinutes', () => {
+    const t0 = '2026-10-17T10:00:00.000Z'
+    expect(elapsedMinutes(t0, Date.parse('2026-10-17T10:14:30Z'))).toBe('14 min')
+    expect(elapsedMinutes(t0, Date.parse('2026-10-17T11:02:00Z'))).toBe('1 h 02 min')
+    expect(elapsedMinutes(t0, Date.parse('2026-10-17T10:00:20Z'))).toBe('0 min')
+  })
+
+  it('activeSummary agrees with buildPlan and names the next set', () => {
+    const day = { slots: [{ ...slot4, exerciseIds: [bench.id] }, { ...slot3, exerciseIds: [dips.id] }] }
+    const exercisesById = new Map([[bench.id, bench], [dips.id, dips]])
+    const now = Date.parse('2026-10-17T10:14:30Z')
+    const workout = { startedAt: '2026-10-17T10:00:00.000Z', skipped: { [bench.id]: [3] }, extra: { [dips.id]: 1 }, chosen: {} }
+    const args = { day, workout, loggedSets: [logged(bench.id, 1), logged(bench.id, 2)], exercisesById, rest: null, now }
+    const summary = activeSummary(args)
+    expect(summary.done).toBe(2)
+    expect(summary.total).toBe(3 + 4)
+    expect(summary.nextSet).toEqual({ exerciseName: 'Barbell bench press', setNumber: 4, total: 4 })
+    expect(summary.elapsedText).toBe('14 min')
+    expect(summary.restText).toBe('')
+    const running = startRest({ exerciseId: bench.id, exerciseName: 'Bench', restSeconds: 90 }, now - 48_000)
+    expect(activeSummary({ ...args, rest: running }).restText).toBe('resting 0:42')
+    const over = startRest({ exerciseId: bench.id, exerciseName: 'Bench', restSeconds: 90 }, now - 102_000)
+    expect(activeSummary({ ...args, rest: over }).restText).toBe('rest over +0:12')
+  })
+
+  it('activeSummary reads an old workout without the fields', () => {
+    const day = { slots: [{ ...slot3, exerciseIds: [dips.id] }] }
+    const summary = activeSummary({ day, workout: { startedAt: '2026-10-17T10:00:00.000Z' }, loggedSets: [], exercisesById: new Map([[dips.id, dips]]), rest: null, now: Date.parse('2026-10-17T10:00:00Z') })
+    expect(summary.total).toBe(3)
+    expect(summary.nextSet).toEqual({ exerciseName: 'Dips', setNumber: 1, total: 3 })
   })
 })

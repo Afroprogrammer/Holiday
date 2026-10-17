@@ -98,9 +98,12 @@ returns to Home:
 
 - Start on Home: create the workout, then push `#workout`.
 - Resume on Home: push `#workout`.
-- Cold open with a workout already running and an empty hash: push
-  `#workout` once, so the app opens on the workout (as today) and back
-  still goes Home.
+- Cold open with a workout already running and an empty hash: Home with
+  the Resume card. The entry is pushed only from a tap (Start or Resume),
+  because Chrome skips history entries pushed without user activation when
+  the back gesture runs, which would close the app instead of returning
+  Home. One extra tap on reopen is the price. (Changed at review on
+  October 17, 2026; the first draft pushed on cold open.)
 
 Leaving the workout: the Android back gesture and the browser back button
 pop that entry. A `‹ Home` link in the workout header does the same
@@ -182,7 +185,8 @@ out of `RestDock` into a hook `useRestWatcher(rest, { notify, nextSet })`
 that returns `flash`, mounted once in `App.jsx` whenever a workout is
 active. It fires once when the countdown crosses zero, sends the system
 notification when permitted, runs `signalRestOver()`, and holds `flash`
-for `FLASH_MS`. A rest that was already over at mount does not fire.
+for `FLASH_MS`. A rest that is already over when it first arrives (the queries load
+after the first render) does not fire.
 `App` computes `notify` (setting plus permission) and `nextSet` (from
 `activeSummary`) and passes `flash` to the Workout screen (for the dock's
 amber flash) and to Home (the Resume card's primary button and caption
