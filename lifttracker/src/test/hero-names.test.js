@@ -24,3 +24,19 @@ describe('workout screen wiring', () => {
     expect(src).toMatch(/useSetHandoff\(/)
   })
 })
+
+describe('workout screen round 2 wiring', () => {
+  const src = readFileSync(new URL('../screens/Workout.jsx', import.meta.url), 'utf8')
+  it('persists skipped, extra and chosen through updateWorkoutState and never keeps them in state', () => {
+    expect(src).toMatch(/updateWorkoutState\(/)
+    expect(src).not.toMatch(/useState\(\{\}\)/)
+  })
+  it('leaves through nav after finishing and from the header link', () => {
+    expect(src).toMatch(/await finishWorkout\(workout\.id\)[\s\S]*leaveWorkout\(\)/)
+    expect(src).toMatch(/‹ Home/)
+  })
+  it('passes flash to the dock and has no watcher or wake lock of its own', () => {
+    expect(src).toMatch(/<RestDock[^>]*flash=\{flash\}/)
+    expect(src).not.toMatch(/useWakeLock|useRestWatcher|notify=\{/)
+  })
+})
