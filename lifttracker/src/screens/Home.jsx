@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import BottomSheet from '../components/BottomSheet.jsx'
-import CycleBar from '../components/CycleBar.jsx'
 import DayPage from '../components/DayPage.jsx'
 import ResumeCard from '../components/ResumeCard.jsx'
 import UpdateBanner from '../components/UpdateBanner.jsx'
@@ -47,6 +46,7 @@ export default function Home({ active, rest, flash = false, update, onStart, onR
 
   if (view === undefined) return null
   const { nextDay, days } = view
+  const programDays = days.map((d) => d.day)
   const current = days[page ?? nextIndex] ?? days[0]
   const summary = active ? activeSummary({ ...active, rest, now }) : null
 
@@ -74,12 +74,11 @@ export default function Home({ active, rest, flash = false, update, onStart, onR
 
         <div ref={pager} onScroll={onScroll} aria-roledescription="carousel" className="no-scrollbar mt-7 flex snap-x snap-mandatory overflow-x-auto">
           {days.map((entry) => (
-            <DayPage key={entry.day.id} entry={entry} count={days.length} upNext={entry.day.id === nextDay?.id} />
+            <DayPage key={entry.day.id} entry={entry} days={programDays} nextDayId={nextDay?.id} upNext={entry.day.id === nextDay?.id} />
           ))}
         </div>
 
         <div className="px-5">
-          <CycleBar days={days.map((d) => d.day)} nextDayId={nextDay?.id} />
           {canInstall && !installed && (
             <div className="mt-5 flex items-center gap-3 rounded-2xl border border-rule bg-card px-4 py-3">
               <span className="min-w-0 flex-1">

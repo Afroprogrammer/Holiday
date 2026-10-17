@@ -1,11 +1,14 @@
+import CycleBar from './CycleBar.jsx'
 import Illustration from './Illustration.jsx'
 import { formatSession } from '../lib/history.js'
 import { formatShortDate } from '../lib/format.js'
 import { shortName } from '../lib/workoutProgress.js'
 
 // One page of the Home pager (gym round 2, 3.1): the day as a poster, its
-// exercises as a strip of figures, and what you did last time.
-export default function DayPage({ entry, count, upNext }) {
+// exercises as a strip of figures, and what you did last time. The cycle
+// bar shows the cycle position and is the same on every page.
+export default function DayPage({ entry, days, nextDayId, upNext }) {
+  const count = days.length
   const { day, stripSlugs, firstExercise, firstSession, lastWorkout } = entry
   const [dayWord, dayLetter] = day.name.split(' ')
   return (
@@ -15,6 +18,7 @@ export default function DayPage({ entry, count, upNext }) {
         {dayWord}
         {dayLetter && <span className="ml-2.5 text-act">{dayLetter}</span>}
       </h1>
+      <CycleBar days={days} nextDayId={nextDayId} />
       <div className="-mx-1 mt-6 flex gap-1">
         {stripSlugs.map((slug, i) => (
           <span key={i} className="flex flex-1 justify-center">
