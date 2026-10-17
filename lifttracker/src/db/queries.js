@@ -1,5 +1,5 @@
 import { db } from './db.js'
-import { getPreviousSets } from './workouts.js'
+import { getActiveWorkout, getPreviousSets } from './workouts.js'
 
 // The day the home screen offers next. The stored cycle position wins, so
 // that starting a day out of order doesn't move it until that workout is
@@ -61,4 +61,18 @@ export async function getHomeView() {
     firstSession: firstSets.length > 0 ? { sets: [...firstSets].sort((a, b) => a.setNumber - b.setNumber) } : null,
     stripSlugs,
   }
+}
+
+// The running workout for App and Home (gym round 2, 3.3): enough to build
+// the resume summary. No previous-session history is needed because the
+// chosen alternative per slot is stored on the workout.
+export async function getActiveView() {
+  const workout = await getActiveWorkout()
+  if (!workout) return null
+  const [day, loggedSets, exercises] = await Promise.all([
+    db.programDays.get(workout.programDayId),
+    db.sets.where('workoutId').equals(workout.id).toArray(),
+    db.exercises.toArray(),
+  ])
+  return { workout, day, loggedSets, exercisesById: new Map(exercises.map((e) => [e.id, e])) }
 }

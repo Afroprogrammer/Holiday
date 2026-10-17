@@ -16,9 +16,26 @@ export async function getActiveWorkout() {
 export async function startWorkout(programDayId) {
   const active = await getActiveWorkout()
   if (active) return active
-  const workout = { id: newId(), programDayId, startedAt: now(), finishedAt: null }
+  const workout = { id: newId(), programDayId, startedAt: now(), finishedAt: null, skipped: {}, extra: {}, chosen: {} }
   await db.workouts.add(workout)
   return workout
+}
+
+// Screen state that must survive leaving the workout (gym round 2, 3.4):
+// skipped set numbers, added sets and the alternative chosen per slot.
+// Each field is replaced whole.
+export async function updateWorkoutState(id, patch) {
+  await db.workouts.update(id, patch)
+}
+
+// Discard (gym round 2, 3.3): the workout, its sets and the running rest go
+// together, so no rest or set can outlive its workout.
+export async function discardWorkout(id) {
+  await db.transaction('rw', db.workouts, db.sets, db.settings, async () => {
+    await db.sets.where('workoutId').equals(id).delete()
+    await db.settings.delete('activeRest')
+    await db.workouts.delete(id)
+  })
 }
 
 // Logs a set exactly as entered, with its unit. Sets are append-only.
