@@ -1,5 +1,6 @@
 import { prefillForSet, rangeMarker } from './prefill.js'
 import { formatCountdown, remainingSeconds } from './timer.js'
+import { formatSession } from './history.js'
 import { convertWeight } from './units.js'
 
 // Pure view logic for the workout screen. The screen passes the current
@@ -27,7 +28,7 @@ export function buildPlan(entries, loggedSets, skipped, extra, focusExerciseId =
       else rows.push({ n, status: 'pending', prefill, last })
     }
     const remaining = rows.filter((r) => r.status === 'pending').length
-    return { exercise, slot, total, remaining, rows }
+    return { exercise, slot, previousSets, total, remaining, rows }
   })
 
   let openIndex = exercises.findIndex((e) => e.exercise.id === focusExerciseId && e.remaining > 0)
@@ -141,4 +142,30 @@ export function activeSummary({ day, workout, loggedSets, exercisesById, rest, n
   const phase = restPhase(rest, now)
   const restText = phase === 'none' ? '' : `${phase === 'running' ? 'resting' : 'rest over'} ${formatCountdown(remainingSeconds(rest, now))}`
   return { done: plan.done, total: plan.total, nextSet, elapsedText: elapsedMinutes(workout.startedAt, now), restText }
+}
+
+function repRange(slot) {
+  return slot.repMin === slot.repMax ? `${slot.repMin}` : `${slot.repMin}–${slot.repMax}`
+}
+
+// What the rest block's next-up card shows (rest next-up spec, 3.2): the
+// open set after this rest, whether it belongs to the exercise just rested
+// ('same') or another one ('other'), the weight to load in the display
+// unit, last time, and for 'same' the exercise that follows. 'none' when
+// nothing is left to log.
+export function restPreview(plan, restExerciseId) {
+  const position = activePosition(plan)
+  if (!position) return { kind: 'none' }
+  const entry = plan.exercises[position.exerciseIndex]
+  const row = entry.rows.find((r) => r.status === 'open')
+  const unit = entry.exercise.displayUnit
+  const setupText = row.prefill ? `${convertWeight(row.prefill.weight, row.prefill.unit, unit)} ${unit}` : null
+  const base = { entry, row, index: position.exerciseIndex + 1, count: plan.exercises.length, setupText }
+  if (entry.exercise.id !== restExerciseId) {
+    const sorted = [...(entry.previousSets ?? [])].sort((a, b) => a.setNumber - b.setNumber)
+    return { kind: 'other', ...base, lastText: formatSession(sorted) }
+  }
+  const following = plan.exercises.find((e) => e !== entry && e.remaining > 0)
+  const then = following ? { name: shortName(following.exercise.name), text: `${following.remaining} × ${repRange(following.slot)}` } : null
+  return { kind: 'same', ...base, lastText: lastTimeText(row.last, unit), then }
 }

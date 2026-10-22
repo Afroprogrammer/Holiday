@@ -7,6 +7,7 @@ import {
   elapsedMinutes,
   formatElapsed,
   resolveChosen,
+  restPreview,
   skippedSets,
   lastTimeText,
   remainingSentence,
@@ -223,5 +224,65 @@ describe('round 2 helpers', () => {
     const summary = activeSummary({ day, workout: { startedAt: '2026-10-17T10:00:00.000Z' }, loggedSets: [], exercisesById: new Map([[dips.id, dips]]), rest: null, now: Date.parse('2026-10-17T10:00:00Z') })
     expect(summary.total).toBe(3)
     expect(summary.nextSet).toEqual({ exerciseName: 'Dips', setNumber: 1, total: 3 })
+  })
+})
+
+describe('restPreview', () => {
+  const chest = { id: 'machine-chest-press', name: 'Machine chest press', displayUnit: 'lb', restSeconds: 90 }
+  const benchK = { ...bench, restSeconds: 90 }
+  const chestPrev = [
+    { setNumber: 1, weight: 50, unit: 'kg', reps: 10 },
+    { setNumber: 3, weight: 50, unit: 'kg', reps: 9 },
+    { setNumber: 2, weight: 50, unit: 'kg', reps: 10 },
+  ]
+  const slotChest = { targetSets: 3, repMin: 8, repMax: 10 }
+  const ents = [
+    { exercise: benchK, slot: { targetSets: 2, repMin: 5, repMax: 8 }, previousSets: prev },
+    { exercise: chest, slot: slotChest, previousSets: chestPrev },
+    { exercise: dips, slot: slot3, previousSets: [] },
+  ]
+
+  it('names another exercise with last time and a converted set-up weight', () => {
+    const plan = buildPlan(ents, [logged(bench.id, 1), logged(bench.id, 2)], {}, {})
+    const p = restPreview(plan, bench.id)
+    expect(p.kind).toBe('other')
+    expect(p.entry.exercise.id).toBe(chest.id)
+    expect(p.index).toBe(2)
+    expect(p.count).toBe(3)
+    expect(p.row.n).toBe(1)
+    expect(p.lastText).toBe('50 kg × 10 · 10 · 9')
+    expect(p.setupText).toBe('110.2 lb')
+    expect(p.then).toBeUndefined()
+  })
+
+  it('names the next set of the same exercise and what follows it', () => {
+    const plan = buildPlan(ents, [logged(bench.id, 1)], {}, {})
+    const p = restPreview(plan, bench.id)
+    expect(p.kind).toBe('same')
+    expect(p.row.n).toBe(2)
+    expect(p.lastText).toBe('60 kg × 7')
+    expect(p.setupText).toBe('60 kg')
+    expect(p.then).toEqual({ name: 'Machine chest press', text: '3 × 8–10' })
+  })
+
+  it('says the same exercise is last when nothing follows', () => {
+    const plan = buildPlan([ents[2]], [logged(dips.id, 1)], {}, {})
+    const p = restPreview(plan, dips.id)
+    expect(p.kind).toBe('same')
+    expect(p.then).toBeNull()
+    expect(p.setupText).toBe('60 kg')
+  })
+
+  it('is none when every set is logged or skipped', () => {
+    const plan = buildPlan([ents[0]], [logged(bench.id, 1), logged(bench.id, 2)], {}, {})
+    expect(restPreview(plan, bench.id)).toEqual({ kind: 'none' })
+  })
+
+  it('treats a rested exercise no longer in the plan as another exercise', () => {
+    const plan = buildPlan(ents, [], {}, {})
+    const p = restPreview(plan, 'not-in-plan')
+    expect(p.kind).toBe('other')
+    expect(p.entry.exercise.id).toBe(bench.id)
+    expect(p.setupText).toBe('60 kg')
   })
 })
