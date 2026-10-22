@@ -8,7 +8,7 @@ const src = readFileSync(new URL('../screens/Workout.jsx', import.meta.url), 'ut
 
 describe('workout screen wiring', () => {
   it('uses the short name on the hero', () => {
-    expect(src).toMatch(/<h2[^>]*>\{shortName\(active\.exercise\.name\)\}<\/h2>/)
+    expect(src).toMatch(/<h2[^>]*>\{shortName\(heroEntry\.exercise\.name\)\}<\/h2>/)
   })
   it('passes the set id into the rest and removes a set through the db helper', () => {
     expect(src).toMatch(/startRest\(\{[^}]*setId: logged\.id/)
@@ -38,5 +38,20 @@ describe('workout screen round 2 wiring', () => {
   it('passes flash to the dock and has no watcher or wake lock of its own', () => {
     expect(src).toMatch(/<RestDock[^>]*flash=\{flash\}/)
     expect(src).not.toMatch(/useWakeLock|useRestWatcher|notify=\{/)
+  })
+})
+
+describe('workout screen rest next-up wiring', () => {
+  const src = readFileSync(new URL('../screens/Workout.jsx', import.meta.url), 'utf8')
+  it('shows the rest block with a preview instead of the done card', () => {
+    expect(src).toMatch(/<RestBlock/)
+    expect(src).not.toMatch(/DoneCard/)
+    expect(src).toMatch(/restPreview\(plan, cardSet\.exerciseId\)/)
+    expect(src).toMatch(/onStart=\{skipRest\}/)
+  })
+  it('keeps the hero and set rows on the rested exercise while the block shows', () => {
+    expect(src).toMatch(/const heroEntry = cardSet && cardEntry \? cardEntry : active/)
+    expect(src).toMatch(/\{shortName\(heroEntry\.exercise\.name\)\}/)
+    expect(src).toMatch(/<SetRows\s+plan=\{heroEntry\}/)
   })
 })
