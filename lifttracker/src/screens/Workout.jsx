@@ -290,6 +290,7 @@ export default function Workout({ workoutId, flash = false }) {
 
   const showCard = cardSet !== null
   let activeArea
+  const preview = showCard ? restPreview(plan, cardSet.exerciseId) : null
   if (cardSet && editing === cardSet.id) activeArea = editorFor(cardSet)
   else if (showCard)
     activeArea = (
@@ -297,10 +298,11 @@ export default function Workout({ workoutId, flash = false }) {
         set={cardSet}
         marker={cardMarker}
         exerciseName={cardExerciseName}
-        preview={restPreview(plan, cardSet.exerciseId)}
+        preview={preview}
         leaving={leaving}
         onEdit={() => setEditing(cardSet.id)}
         onStart={skipRest}
+        onChoose={(id) => choose(entries[preview.index - 1].index, id)}
       />
     )
   else if (activeRow && editing === null)
@@ -351,7 +353,7 @@ export default function Workout({ workoutId, flash = false }) {
           <p className="mt-1.5 text-[15px] text-ink-2">
             {heroEntry.slot.targetSets} sets · {repsText(heroEntry.slot)} · rest {heroEntry.exercise.restSeconds} s{heroEntry.exercise.lowerIsBetter ? ' · assistance' : ''}
           </p>
-          {heroEntry.slot.options.length > 1 && (
+          {!showCard && heroEntry.slot.options.length > 1 && (
             <div className="mt-2 flex overflow-hidden rounded-lg border border-rule bg-raised text-sm">
               {heroEntry.slot.options.map((option) => (
                 <button

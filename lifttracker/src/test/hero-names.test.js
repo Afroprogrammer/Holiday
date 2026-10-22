@@ -55,3 +55,11 @@ describe('workout screen rest next-up wiring', () => {
     expect(src).toMatch(/<SetRows\s+plan=\{heroEntry\}/)
   })
 })
+
+describe('alternatives during a rest', () => {
+  const src = readFileSync(new URL('../screens/Workout.jsx', import.meta.url), 'utf8')
+  it('hides the hero toggle while the rest block shows and passes onChoose to the card', () => {
+    expect(src).toMatch(/!showCard && heroEntry\.slot\.options\.length > 1/)
+    expect(src).toMatch(/onChoose=\{/)
+  })
+})

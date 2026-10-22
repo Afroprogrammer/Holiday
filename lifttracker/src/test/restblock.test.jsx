@@ -78,6 +78,22 @@ describe('NextUpCard', () => {
   })
 })
 
+describe('NextUpCard alternatives', () => {
+  it('lets the next exercise switch to its alternative during the rest', () => {
+    const onChoose = vi.fn()
+    const options = [chest, { id: 'dumbbell-bench', name: 'Dumbbell bench press' }]
+    render(<NextUpCard preview={{ ...other, entry: { ...other.entry, slot: { ...other.entry.slot, options } } }} onStart={() => {}} onChoose={onChoose} />)
+    expect(screen.getByRole('button', { name: 'Machine chest press' }).className).toContain('bg-act')
+    fireEvent.click(screen.getByRole('button', { name: 'Dumbbell bench press' }))
+    expect(onChoose).toHaveBeenCalledWith('dumbbell-bench')
+  })
+
+  it('shows no toggle for one option or for the same exercise', () => {
+    render(<NextUpCard preview={{ ...other, entry: { ...other.entry, slot: { ...other.entry.slot, options: [chest] } } }} onStart={() => {}} onChoose={() => {}} />)
+    expect(screen.queryByRole('button', { name: 'Machine chest press' })).toBeNull()
+  })
+})
+
 describe('RestBlock', () => {
   it('has no Done button and takes the leaving class', () => {
     const { container } = render(<RestBlock set={{ setNumber: 4, weight: 60, unit: 'kg', reps: 8 }} marker={null} preview={other} leaving onEdit={() => {}} onStart={() => {}} />)

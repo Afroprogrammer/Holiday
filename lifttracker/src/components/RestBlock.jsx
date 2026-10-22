@@ -33,7 +33,9 @@ function Cell({ label, value, accent = false }) {
 
 // What comes after this rest (rest next-up spec, 3.2): another exercise in
 // full, the next set of the same exercise with what follows it, or nothing.
-export function NextUpCard({ preview, onStart }) {
+// A next exercise with alternatives gets its toggle here, so a taken
+// machine can be swapped without cutting the rest short.
+export function NextUpCard({ preview, onStart, onChoose }) {
   const shell = 'mt-3.5 flex flex-col gap-2.5 rounded-[18px] border border-act bg-raised px-4 pt-4 pb-3.5'
   if (preview.kind === 'none') {
     return (
@@ -73,6 +75,20 @@ export function NextUpCard({ preview, onStart }) {
           <p className="text-[15px] text-ink-2">{preview.after ? `Then: ${preview.after.name} · ${preview.after.text}` : 'Then: last exercise'}</p>
         </div>
       )}
+      {preview.kind === 'other' && onChoose && (entry.slot.options?.length ?? 0) > 1 && (
+        <div className="flex overflow-hidden rounded-lg border border-rule bg-card text-sm">
+          {entry.slot.options.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onChoose(option.id)}
+              className={`h-11 flex-1 px-2 ${option.id === entry.exercise.id ? 'bg-act font-semibold text-on-act' : 'text-ink-2'}`}
+            >
+              {shortName(option.name)}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2 border-t border-rule pt-2.5 text-sm text-ink-2">
         <Cell label="Last time" value={lastText} />
         <Cell label="Set up" value={setupText ?? '–'} accent />
@@ -86,11 +102,11 @@ export function NextUpCard({ preview, onStart }) {
 
 // The active area while a rest runs: what you just did, then what is next.
 // No Done button exists here; the rest ends by itself or through Start.
-export default function RestBlock({ set, marker, exerciseName = null, preview, leaving = false, onEdit, onStart }) {
+export default function RestBlock({ set, marker, exerciseName = null, preview, leaving = false, onEdit, onStart, onChoose }) {
   return (
     <section className={`mt-4 ${leaving ? 'set-out' : ''}`}>
       <LoggedLine set={set} marker={marker} exerciseName={exerciseName} onEdit={onEdit} />
-      <NextUpCard preview={preview} onStart={onStart} />
+      <NextUpCard preview={preview} onStart={onStart} onChoose={onChoose} />
     </section>
   )
 }
