@@ -151,7 +151,7 @@ function repRange(slot) {
 // What the rest block's next-up card shows (rest next-up spec, 3.2): the
 // open set after this rest, whether it belongs to the exercise just rested
 // ('same') or another one ('other'), the weight to load in the display
-// unit, last time, and for 'same' the exercise that follows. 'none' when
+// unit, last time, and for 'same' the exercise that follows (`after`). 'none' when
 // nothing is left to log.
 export function restPreview(plan, restExerciseId) {
   const position = activePosition(plan)
@@ -166,6 +166,6 @@ export function restPreview(plan, restExerciseId) {
     return { kind: 'other', ...base, lastText: formatSession(sorted) }
   }
   const following = plan.exercises.find((e) => e !== entry && e.remaining > 0)
-  const then = following ? { name: shortName(following.exercise.name), text: `${following.remaining} × ${repRange(following.slot)}` } : null
-  return { kind: 'same', ...base, lastText: lastTimeText(row.last, unit), then }
+  const after = following ? { name: shortName(following.exercise.name), text: `${following.remaining} × ${repRange(following.slot)}` } : null
+  return { kind: 'same', ...base, lastText: lastTimeText(row.last, unit), after }
 }

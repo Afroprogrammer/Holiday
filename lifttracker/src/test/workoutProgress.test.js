@@ -252,7 +252,7 @@ describe('restPreview', () => {
     expect(p.row.n).toBe(1)
     expect(p.lastText).toBe('50 kg × 10 · 10 · 9')
     expect(p.setupText).toBe('110.2 lb')
-    expect(p.then).toBeUndefined()
+    expect(p.after).toBeUndefined()
   })
 
   it('names the next set of the same exercise and what follows it', () => {
@@ -262,14 +262,14 @@ describe('restPreview', () => {
     expect(p.row.n).toBe(2)
     expect(p.lastText).toBe('60 kg × 7')
     expect(p.setupText).toBe('60 kg')
-    expect(p.then).toEqual({ name: 'Machine chest press', text: '3 × 8–10' })
+    expect(p.after).toEqual({ name: 'Machine chest press', text: '3 × 8–10' })
   })
 
   it('says the same exercise is last when nothing follows', () => {
     const plan = buildPlan([ents[2]], [logged(dips.id, 1)], {}, {})
     const p = restPreview(plan, dips.id)
     expect(p.kind).toBe('same')
-    expect(p.then).toBeNull()
+    expect(p.after).toBeNull()
     expect(p.setupText).toBe('60 kg')
   })
 
