@@ -11,6 +11,7 @@ import SettingRow from '../components/SettingRow.jsx'
 import Switch from '../components/Switch.jsx'
 import { getNextProgramDay, getProgramDays } from '../db/queries.js'
 import { DEFAULT_REST_KEYS, SETTING_KEYS, getExercisesByName, getSetting, resetCycle, setSetting } from '../db/settings.js'
+import { phoneTimerUrl } from '../lib/phoneTimer.js'
 import { getRegistration, notificationPermission, requestNotificationPermission, testBuzz } from '../lib/restNotification.js'
 
 function Group({ children }) {
@@ -148,6 +149,17 @@ export default function Settings() {
           ›
         </span>
       </SettingRow>
+      {/* Experiment (rest next-up spec, 3.3): whether this phone lets the app
+          start a Clock timer, which rings with the screen off. */}
+      <a href={phoneTimerUrl(10, 'LiftTracker test')} className="flex min-h-14 w-full items-center gap-3 border-b border-rule py-2 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block text-base">Try phone timer</span>
+          <span className="block text-[13px] text-ink-2">Asks the Clock app for a 10 s timer. If nothing happens, your phone does not allow it.</span>
+        </span>
+        <span aria-hidden="true" className="font-num text-[22px] text-ink-3">
+          ›
+        </span>
+      </a>
 
       <Group>Program</Group>
       <button type="button" onClick={() => setPicking(true)} className="flex min-h-14 w-full items-center gap-3 border-b border-rule py-2 text-left">
