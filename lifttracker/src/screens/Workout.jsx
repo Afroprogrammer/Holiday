@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import BottomSheet from '../components/BottomSheet.jsx'
-import DoneCard from '../components/DoneCard.jsx'
 import Illustration from '../components/Illustration.jsx'
+import RestBlock from '../components/RestBlock.jsx'
 import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
 import SetEditor from '../components/SetEditor.jsx'
 import Stepper from '../components/Stepper.jsx'
@@ -16,7 +16,7 @@ import { closeRestNotifications, getRegistration, notificationPermission, reques
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
 import { useSetHandoff } from '../lib/useSetHandoff.js'
-import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, shortName, skippedSets } from '../lib/workoutProgress.js'
+import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, restPreview, shortName, skippedSets } from '../lib/workoutProgress.js'
 
 // Picks which alternative a slot shows today: the one already logged in this
 // workout, else the one with the most recent history, else the first.
@@ -211,15 +211,19 @@ export default function Workout({ workoutId, flash = false }) {
   const activeIndex = position?.exerciseIndex ?? plan.exercises.length - 1
   const active = plan.exercises[activeIndex]
   const activeRow = position ? active.rows.find((r) => r.status === 'open') : null
-  const queue = plan.exercises.filter((e, i) => i !== activeIndex && e.remaining > 0)
-  const completed = plan.exercises.filter((e, i) => i !== activeIndex && e.remaining === 0 && e.rows.some((r) => r.status === 'logged'))
   const sentence = remainingSentence(plan)
   const targetText = repsText(active.slot).replace(' reps', '')
 
   const cardSet = card
   const cardEntry = cardSet ? plan.exercises.find((e) => e.exercise.id === cardSet.exerciseId) : null
   const cardMarker = cardSet && cardEntry ? rangeMarker(cardSet.reps, cardEntry.slot.repMin, cardEntry.slot.repMax) : null
-  const cardExerciseName = cardSet && cardSet.exerciseId !== active.exercise.id ? shortName(cardEntry?.exercise.name ?? rest?.exerciseName ?? '') : null
+  // While the rest block shows, the hero and set rows stay on the exercise
+  // just rested; the next one arrives with the handoff (rest next-up, 3.1).
+  const heroEntry = cardSet && cardEntry ? cardEntry : active
+  const heroIndex = plan.exercises.indexOf(heroEntry)
+  const cardExerciseName = cardSet && cardSet.exerciseId !== heroEntry.exercise.id ? shortName(cardEntry?.exercise.name ?? rest?.exerciseName ?? '') : null
+  const queue = plan.exercises.filter((e, i) => i !== heroIndex && e.remaining > 0)
+  const completed = plan.exercises.filter((e, i) => i !== heroIndex && e.remaining === 0 && e.rows.some((r) => r.status === 'logged'))
 
   const finish = async () => {
     await saveActiveRest(null)
@@ -286,8 +290,21 @@ export default function Workout({ workoutId, flash = false }) {
 
   const showCard = cardSet !== null
   let activeArea
+  const preview = showCard ? restPreview(plan, cardSet.exerciseId) : null
   if (cardSet && editing === cardSet.id) activeArea = editorFor(cardSet)
-  else if (showCard) activeArea = <DoneCard set={cardSet} marker={cardMarker} exerciseName={cardExerciseName} leaving={leaving} onEdit={() => setEditing(cardSet.id)} onSkipRest={skipRest} />
+  else if (showCard)
+    activeArea = (
+      <RestBlock
+        set={cardSet}
+        marker={cardMarker}
+        exerciseName={cardExerciseName}
+        preview={preview}
+        leaving={leaving}
+        onEdit={() => setEditing(cardSet.id)}
+        onStart={skipRest}
+        onChoose={(id) => choose(entries[preview.index - 1].index, id)}
+      />
+    )
   else if (activeRow && editing === null)
     activeArea = (
       <ActiveSet
@@ -327,23 +344,23 @@ export default function Workout({ workoutId, flash = false }) {
         </span>
       </header>
 
-      <section className="mt-2 flex items-end gap-3">
+      <section className={`mt-2 flex items-end gap-3 ${entering && heroEntry === active ? 'set-in' : ''}`}>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold uppercase tracking-wider text-act">
-            Exercise {activeIndex + 1} of {plan.exercises.length}
+            Exercise {heroIndex + 1} of {plan.exercises.length}
           </p>
-          <h2 className="mt-1 font-num text-[40px] font-bold uppercase leading-[0.95]">{shortName(active.exercise.name)}</h2>
+          <h2 className="mt-1 font-num text-[40px] font-bold uppercase leading-[0.95]">{shortName(heroEntry.exercise.name)}</h2>
           <p className="mt-1.5 text-[15px] text-ink-2">
-            {active.slot.targetSets} sets · {repsText(active.slot)} · rest {active.exercise.restSeconds} s{active.exercise.lowerIsBetter ? ' · assistance' : ''}
+            {heroEntry.slot.targetSets} sets · {repsText(heroEntry.slot)} · rest {heroEntry.exercise.restSeconds} s{heroEntry.exercise.lowerIsBetter ? ' · assistance' : ''}
           </p>
-          {active.slot.options.length > 1 && (
+          {!showCard && heroEntry.slot.options.length > 1 && (
             <div className="mt-2 flex overflow-hidden rounded-lg border border-rule bg-raised text-sm">
-              {active.slot.options.map((option) => (
+              {heroEntry.slot.options.map((option) => (
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => choose(entries[activeIndex].index, option.id)}
-                  className={`h-11 flex-1 px-2 ${option.id === active.exercise.id ? 'bg-act font-semibold text-on-act' : 'text-ink-2'}`}
+                  onClick={() => choose(entries[heroIndex].index, option.id)}
+                  className={`h-11 flex-1 px-2 ${option.id === heroEntry.exercise.id ? 'bg-act font-semibold text-on-act' : 'text-ink-2'}`}
                 >
                   {shortName(option.name)}
                 </button>
@@ -351,20 +368,20 @@ export default function Workout({ workoutId, flash = false }) {
             </div>
           )}
         </div>
-        <Illustration slug={active.exercise.illustration} size={96} tone="ink-2" live={Boolean(activeRow) && !showCard} />
+        <Illustration slug={heroEntry.exercise.illustration} size={96} tone="ink-2" live={Boolean(activeRow) && !showCard} />
       </section>
 
       {activeArea}
 
       <SetRows
-        plan={active}
+        plan={heroEntry}
         editingId={editing}
         hiddenId={showCard || (cardSet && editing === cardSet.id) ? cardSet.id : null}
         editor={editorFor}
         onEdit={(set) => setEditing(set.id)}
-        onSkip={(n) => toggleSkip(active.exercise.id, n, true)}
-        onUnskip={(n) => toggleSkip(active.exercise.id, n, false)}
-        onAddSet={() => addSet(active.exercise.id)}
+        onSkip={(n) => toggleSkip(heroEntry.exercise.id, n, true)}
+        onUnskip={(n) => toggleSkip(heroEntry.exercise.id, n, false)}
+        onAddSet={() => addSet(heroEntry.exercise.id)}
       />
 
       {queue.length > 0 && (

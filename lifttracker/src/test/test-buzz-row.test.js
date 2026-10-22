@@ -10,3 +10,12 @@ describe('test buzz row', () => {
     expect(src).toMatch(/testBuzz\(/)
   })
 })
+
+describe('phone timer row', () => {
+  it('links to the Clock timer intent for a 10 s test', () => {
+    const src = readFileSync(new URL('../screens/Settings.jsx', import.meta.url), 'utf8')
+    expect(src).toMatch(/Try phone timer/)
+    expect(src).toMatch(/href=\{phoneTimerUrl\(10, 'LiftTracker test'\)\}/)
+    expect(src).toMatch(/If nothing happens, your phone does not allow it\./)
+  })
+})

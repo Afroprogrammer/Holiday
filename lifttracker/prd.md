@@ -309,6 +309,7 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 12, 2026 | Android install work accepted: wake lock, background rest notification, in-app install, update banner on Home only, JSON backup. No iOS work. See `docs/superpowers/specs/2026-10-12-lifttracker-android-install-design.md`. |
 | October 16, 2026 | Gym round 1: during a rest the active area shows the logged set, not the next steppers; logged sets can be edited or removed; reps are whole numbers; the workout hero uses short names. See `docs/superpowers/specs/2026-10-16-lifttracker-gym-round-1-design.md`. |
 | October 17, 2026 | Gym round 2: Home is a swipe pager over the four days; the workout lives under `#workout` so the back gesture returns Home, which shows a live Resume card and a Discard sheet; skipped, extra and chosen sets are stored on the workout. See `docs/superpowers/specs/2026-10-17-lifttracker-gym-round-2-design.md`. |
+| October 22, 2026 | During a rest the workout screen shows the logged set on one line and a next-up card: the next exercise in full, or the next set of the same exercise and which exercise follows. The hero stays on the exercise just done until the rest ends. Settings gains a test for starting a timer in the phone's Clock app. See `docs/superpowers/specs/2026-10-22-lifttracker-rest-next-up-design.md`. |
 
 ## Open items
 
