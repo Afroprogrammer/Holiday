@@ -15,6 +15,7 @@ vi.mock('dexie-react-hooks', () => ({
 }))
 vi.mock('../lib/update.js', () => ({ useAppUpdate: () => ({ ready: false, apply: () => {} }) }))
 vi.mock('../lib/wakeLock.js', () => ({ useWakeLock: vi.fn() }))
+vi.mock('../db/seed.js', () => ({ migrateProgram: vi.fn().mockResolvedValue() }))
 vi.mock('../lib/useRestWatcher.js', () => ({ useRestWatcher: vi.fn(() => false) }))
 vi.mock('../screens/Home.jsx', () => ({ default: () => <div>home</div> }))
 vi.mock('../screens/Workout.jsx', () => ({ default: () => <div>workout</div> }))
@@ -25,6 +26,7 @@ import App from '../App.jsx'
 import { resetNav } from '../lib/nav.js'
 import { useWakeLock } from '../lib/wakeLock.js'
 import { useRestWatcher } from '../lib/useRestWatcher.js'
+import { migrateProgram } from '../db/seed.js'
 
 const ACTIVE = {
   workout: { id: 'w1', programDayId: 'push-a', startedAt: new Date().toISOString(), finishedAt: null, skipped: {}, extra: {}, chosen: {} },
@@ -101,5 +103,17 @@ describe('App router', () => {
     render(<App />)
     expect(useRestWatcher.mock.lastCall[0]).toBe(live.rest)
     expect(useRestWatcher.mock.lastCall[1].nextSet).toEqual({ exerciseName: 'Dips', setNumber: 1, total: 3 })
+  })
+  it('runs the program migration whenever no workout is active', async () => {
+    migrateProgram.mockClear()
+    live.active = ACTIVE
+    window.location.hash = '#workout'
+    const { rerender } = render(<App />)
+    await act(async () => {})
+    expect(migrateProgram).not.toHaveBeenCalled()
+    live.active = null
+    rerender(<App />)
+    await act(async () => {})
+    expect(migrateProgram).toHaveBeenCalledTimes(1)
   })
 })

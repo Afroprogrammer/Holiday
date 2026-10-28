@@ -20,3 +20,12 @@ describe('exercise placement', () => {
     expect(placementCaption([{ dayName: 'Push A', index: 5 }, { dayName: 'Push B', index: 3 }])).toBe('Push A · exercise 5, Push B · exercise 3')
   })
 })
+
+describe('targetsCaption', () => {
+  it('shows one target when every placement agrees, else one per day', async () => {
+    const { targetsCaption } = await import('../lib/placement.js')
+    expect(targetsCaption('barbell-bench-press', programDays)).toBe('3–4 sets · 5–8 reps')
+    expect(targetsCaption('cable-lateral-raise', programDays)).toBe('Push A 3 sets · 12–15 reps, Push B 3 sets · 10–12 reps')
+    expect(targetsCaption('deadlift', programDays)).toBe('')
+  })
+})

@@ -79,7 +79,7 @@ describe('new program display on the workout screen', () => {
 describe('exercise settings and the settings list', () => {
   it('uses the set range on exercise settings', () => {
     const src = readFileSync(new URL('../screens/ExerciseSettings.jsx', import.meta.url), 'utf8')
-    expect(src).toMatch(/setsText\(slot\)/)
+    expect(src).toMatch(/targetsCaption\(exercise\.id, days\)/)
   })
   it('lists only exercises the program uses', () => {
     const src = readFileSync(new URL('../screens/Settings.jsx', import.meta.url), 'utf8')

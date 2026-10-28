@@ -293,5 +293,6 @@ describe('setsText', () => {
     expect(setsText({ targetSets: 3, setsMax: 4 })).toBe('3–4 sets')
     expect(setsText({ targetSets: 4 })).toBe('4 sets')
     expect(setsText({ targetSets: 1 })).toBe('1 set')
+    expect(setsText({ targetSets: 3, setsMax: 3 })).toBe('3 sets')
   })
 })

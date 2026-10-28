@@ -64,7 +64,7 @@ export function NextUpCard({ preview, onStart, onChoose }) {
             <p className="font-num text-[30px] font-bold uppercase leading-none">{name}</p>
             {entry.slot.finisher && (
               <p>
-                <FinisherTag />
+                <FinisherTag inline={false} />
               </p>
             )}
             <p className="text-[15px] text-ink-2">

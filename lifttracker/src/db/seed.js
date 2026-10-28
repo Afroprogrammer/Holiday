@@ -26,8 +26,9 @@ export async function seedIfEmpty(database = db) {
 // illustration only, so units, increments and rest edits stay; the days are
 // replaced under the same ids, so the cycle position stays. Logged sets and
 // workouts are never touched. A workout in progress would see its slots
-// change under it, so the move waits for the next launch without one.
-async function migrateProgram(database) {
+// change under it, so the move waits until none is running; App calls it
+// again whenever no workout is active (e.g. right after Finish).
+export async function migrateProgram(database = db) {
   await database.transaction('rw', database.exercises, database.programDays, database.workouts, database.settings, async () => {
     const version = (await database.settings.get('programVersion'))?.value ?? 1
     if (version >= PROGRAM_VERSION) return

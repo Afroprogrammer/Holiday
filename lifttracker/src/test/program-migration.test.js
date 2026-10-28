@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import Dexie from 'dexie'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { programDays } from '../db/program.js'
-import { seedIfEmpty } from '../db/seed.js'
+import { migrateProgram, seedIfEmpty } from '../db/seed.js'
 
 function freshDb() {
   const database = new Dexie(`migration-test-${Math.random()}`)
@@ -82,5 +82,13 @@ describe('program migration to version 2', () => {
     await database.exercises.update('barbell-squat', { restSeconds: 150 })
     await seedIfEmpty(database)
     expect((await database.exercises.get('barbell-squat')).restSeconds).toBe(150)
+  })
+  it('migrates once the workout ends, without another launch', async () => {
+    await seedV1(database)
+    await database.workouts.add({ id: 'w-live', programDayId: 'pull-b', startedAt: '2026-10-28T10:00:00Z', finishedAt: null })
+    await seedIfEmpty(database)
+    await database.workouts.update('w-live', { finishedAt: '2026-10-28T11:00:00Z' })
+    await migrateProgram(database)
+    expect((await database.programDays.get('pull-b')).slots[0].exerciseIds).toEqual(['barbell-squat', 'hack-squat'])
   })
 })

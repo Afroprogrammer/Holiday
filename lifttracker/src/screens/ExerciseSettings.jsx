@@ -6,8 +6,7 @@ import { getExercise, updateExercise } from '../db/settings.js'
 import { getExerciseHistory } from '../db/workouts.js'
 import { formatShortDate } from '../lib/format.js'
 import { formatSession } from '../lib/history.js'
-import { exercisePlacements, placementCaption } from '../lib/placement.js'
-import { setsText } from '../lib/workoutProgress.js'
+import { exercisePlacements, placementCaption, targetsCaption } from '../lib/placement.js'
 
 function Group({ children }) {
   return <h2 className="mt-6 mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-3">{children}</h2>
@@ -25,8 +24,7 @@ export default function ExerciseSettings({ exerciseId }) {
   const save = (patch) => updateExercise(exercise.id, patch)
   const num = (v) => (v === '' ? 0 : Number(v))
   const placements = exercisePlacements(exercise.id, days)
-  const slot = days.flatMap((d) => d.slots).find((s) => s.exerciseIds.includes(exercise.id))
-  const targets = slot ? `${setsText(slot)} · ${slot.repMin === slot.repMax ? slot.repMin : `${slot.repMin}–${slot.repMax}`} reps` : ''
+  const targets = targetsCaption(exercise.id, days)
   const compound = exercise.category === 'compound'
 
   return (

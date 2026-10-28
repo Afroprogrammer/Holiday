@@ -172,6 +172,6 @@ export function restPreview(plan, restExerciseId) {
 
 // "3–4 sets" for a slot with a range, "4 sets" otherwise (new program).
 export function setsText(slot) {
-  if (slot.setsMax) return `${slot.targetSets}–${slot.setsMax} sets`
+  if (slot.setsMax > slot.targetSets) return `${slot.targetSets}–${slot.setsMax} sets`
   return slot.targetSets === 1 ? '1 set' : `${slot.targetSets} sets`
 }

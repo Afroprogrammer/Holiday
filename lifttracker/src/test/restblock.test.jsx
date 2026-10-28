@@ -82,7 +82,7 @@ describe('NextUpCard with the new program', () => {
   it('shows the set range and the finisher tag for another exercise', () => {
     render(<NextUpCard preview={{ ...other, entry: { ...other.entry, slot: { ...other.entry.slot, setsMax: 4, finisher: true } } }} onStart={() => {}} />)
     expect(screen.getByText('3–4 sets · 8–10 reps · rest 90 s')).toBeTruthy()
-    expect(screen.getByText('Finisher')).toBeTruthy()
+    expect(screen.getByText('Finisher').className).not.toContain('ml-2')
   })
 })
 
