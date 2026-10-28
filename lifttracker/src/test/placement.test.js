@@ -7,15 +7,16 @@ describe('exercise placement', () => {
     expect(exercisePlacements('barbell-bench-press', programDays)).toEqual([{ dayName: 'Push A', index: 1 }])
     expect(exercisePlacements('dumbbell-shrugs', programDays)).toEqual([{ dayName: 'Pull A', index: 3 }])
   })
-  it('lists both days for the shared machine chest press', () => {
-    expect(exercisePlacements('machine-chest-press', programDays)).toEqual([
-      { dayName: 'Push A', index: 2 },
-      { dayName: 'Push B', index: 2 },
+  it('lists both days for the shared lateral raise', () => {
+    expect(exercisePlacements('cable-lateral-raise', programDays)).toEqual([
+      { dayName: 'Push A', index: 5 },
+      { dayName: 'Push B', index: 3 },
     ])
   })
   it('writes the caption', () => {
     expect(placementCaption([{ dayName: 'Push A', index: 1 }])).toBe('Push A · exercise 1')
     expect(placementCaption([{ dayName: 'Push A', index: 2 }, { dayName: 'Push B', index: 2 }])).toBe('Push A and Push B · exercise 2')
     expect(placementCaption([])).toBe('')
+    expect(placementCaption([{ dayName: 'Push A', index: 5 }, { dayName: 'Push B', index: 3 }])).toBe('Push A · exercise 5, Push B · exercise 3')
   })
 })

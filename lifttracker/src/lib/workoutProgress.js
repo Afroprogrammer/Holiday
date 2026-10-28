@@ -169,3 +169,9 @@ export function restPreview(plan, restExerciseId) {
   const after = following ? { name: shortName(following.exercise.name), text: `${following.remaining} × ${repRange(following.slot)}` } : null
   return { kind: 'same', ...base, lastText: lastTimeText(row.last, unit), after }
 }
+
+// "3–4 sets" for a slot with a range, "4 sets" otherwise (new program).
+export function setsText(slot) {
+  if (slot.setsMax) return `${slot.targetSets}–${slot.setsMax} sets`
+  return slot.targetSets === 1 ? '1 set' : `${slot.targetSets} sets`
+}

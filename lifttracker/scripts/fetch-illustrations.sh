@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 BASE="https://raw.githubusercontent.com/bryllim/workout-guide/main/packages/workout-guide/assets"
-SLUGS="bench-press machine-chest-press seated-dumbbell-press dip cable-crunch assisted-pull-up seated-row shrug dumbbell-shrug bicep-curl hanging-knee-raise cable-woodchop incline-dumbbell-press overhead-press tricep-pushdown decline-sit-up deadlift lat-pulldown barbell-row weighted-crunch"
+SLUGS="bench-press machine-chest-press seated-dumbbell-press dip cable-crunch assisted-pull-up seated-row shrug dumbbell-shrug bicep-curl hanging-knee-raise cable-woodchop incline-dumbbell-press overhead-press tricep-pushdown decline-sit-up deadlift lat-pulldown barbell-row weighted-crunch pec-deck machine-shoulder-press cable-lateral-raise cable-curl reverse-pec-deck face-pull overhead-tricep-extension squat hack-squat hammer-curl rope-hammer-curl"
 for slug in $SLUGS; do
   mkdir -p "public/illustrations/$slug"
   for frame in 1 2 3; do

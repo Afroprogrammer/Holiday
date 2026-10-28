@@ -9,9 +9,12 @@ export function exercisePlacements(exerciseId, programDays) {
   return out
 }
 
-// "Push A · exercise 1" or "Push A and Push B · exercise 2".
+// "Push A · exercise 1", "Push A and Push B · exercise 2", or, when the
+// position differs by day, "Push A · exercise 5, Push B · exercise 3".
 export function placementCaption(placements) {
   if (placements.length === 0) return ''
-  const days = placements.map((p) => p.dayName).join(' and ')
-  return `${days} · exercise ${placements[0].index}`
+  if (placements.every((p) => p.index === placements[0].index)) {
+    return `${placements.map((p) => p.dayName).join(' and ')} · exercise ${placements[0].index}`
+  }
+  return placements.map((p) => `${p.dayName} · exercise ${p.index}`).join(', ')
 }
