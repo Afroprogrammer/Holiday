@@ -29,6 +29,7 @@ async function lastFinishedByDay() {
 // exercise's last session for the "last time" line.
 async function dayEntry(day, exercisesById, lastByDay) {
   const stripSlugs = []
+  const picks = []
   for (const slot of day.slots) {
     let pick = slot.exerciseIds[0]
     let latest = null
@@ -41,8 +42,10 @@ async function dayEntry(day, exercisesById, lastByDay) {
       }
     }
     stripSlugs.push(exercisesById.get(pick)?.illustration)
+    picks.push(pick)
   }
-  const firstExercise = exercisesById.get(day.slots[0].exerciseIds[0]) ?? null
+  // The alternative used most recently, same as the strip's figure.
+  const firstExercise = exercisesById.get(picks[0]) ?? null
   const firstSets = firstExercise ? await getPreviousSets(firstExercise.id, null) : []
   return {
     day,

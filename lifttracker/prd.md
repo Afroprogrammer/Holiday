@@ -37,59 +37,71 @@ Push B, Pull B, based on the last completed day, not the calendar.
 Rep ranges are targets shown on screen. You log the reps you actually get,
 which can be above or below the range.
 
+Program version 2, from October 28, 2026 (Franklin's new plan). Sets shown
+as "3 to 4" are counted as the lower number; Add set covers the extra one,
+and Finish does not warn about it. Each day's fifth exercise is its
+finisher. The app tags it "Finisher" and counts it like any other exercise.
+
 ### Day 1: Push A
 
 | Order | Exercise | Sets | Reps | Unit | Rest |
 |---|---|---|---|---|---|
-| 1 | Barbell bench press | 4 | 5 to 8 | kg | 90 s |
-| 2 | Machine chest press | 3 | 8 to 10 | kg* | 60 s |
-| 3 | Dumbbell shoulder press | 3 | 8 to 10 | lb | 90 s |
-| 4 | Dips, bodyweight or assisted | 3 | 8 to 12 | kg, added or assisted | 90 s |
-| 5 | Weighted cable crunch | 3 | 10 to 12 | kg* | 60 s |
+| 1 | Barbell bench press | 3 to 4 | 5 to 8 | kg | 90 s |
+| 2 | Pec fly machine | 3 | 10 to 12 | kg* | 60 s |
+| 3 | Shoulder press machine | 3 | 8 to 10 | kg* | 90 s |
+| 4 | Dips, bodyweight or assisted | 3 | 8 to 10 | kg, added or assisted | 90 s |
+| 5 | Finisher: cable side lateral raise, drop set on the last set | 3 | 12 to 15 | kg* | 60 s |
+| 6 | Cable woodchoppers | 2 to 3 | 10 to 12 | kg* | 60 s |
 
 ### Day 2: Pull A
 
 | Order | Exercise | Sets | Reps | Unit | Rest |
 |---|---|---|---|---|---|
 | 1 | Assisted pull-ups | 4 | 6 to 8 | kg, assistance | 90 s |
-| 2 | Row machine, seated cable or chest-supported | 3 | 8 to 10 | kg* | 60 s |
-| 3 | Barbell or dumbbell shrugs | 4 | 10 to 12 | kg or lb | 60 s |
-| 4 | Bicep curls, barbell or dumbbell | 3 | 8 to 10 | kg or lb | 60 s |
-| 5 | Hanging knee raises or cable woodchoppers | 3 | 10 to 12 | kg, added | 60 s |
+| 2 | Row machine, chest-supported | 3 | 8 to 10 | kg* | 60 s |
+| 3 | Barbell or dumbbell shrugs | 3 | 10 to 12 | kg or lb | 60 s |
+| 4 | Bicep curls, cable or dumbbell | 3 | 8 to 10 | kg or lb | 60 s |
+| 5 | Finisher: reverse pec fly machine or cable face pulls | 3 | 12 to 15 | kg* | 60 s |
+| 6 | Decline sit-ups, bodyweight or weighted | 2 to 3 | 10 to 12 | kg, added | 60 s |
 
 ### Day 3: Push B
 
 | Order | Exercise | Sets | Reps | Unit | Rest |
 |---|---|---|---|---|---|
-| 1 | Incline dumbbell press | 4 | 6 to 8 | lb | 90 s |
+| 1 | Incline dumbbell press | 3 to 4 | 6 to 8 | lb | 90 s |
 | 2 | Machine chest press | 3 | 8 to 10 | kg* | 60 s |
-| 3 | Barbell overhead press | 3 | 6 to 8 | kg | 90 s |
+| 3 | Cable side lateral raise | 3 | 10 to 12 | kg* | 60 s |
 | 4 | Tricep pushdowns, cable | 3 | 10 to 12 | kg* | 60 s |
-| 5 | Weighted decline sit-ups | 3 | 10 to 12 | kg, added | 60 s |
+| 5 | Finisher: overhead cable tricep extension | 2 | 12 to 15 | kg* | 60 s |
+| 6 | Weighted cable crunch | 2 to 3 | 10 to 12 | kg* | 60 s |
 
-### Day 4: Pull B
+### Day 4: Pull B (squat focus)
 
 | Order | Exercise | Sets | Reps | Unit | Rest |
 |---|---|---|---|---|---|
-| 1 | Deadlift, conventional or Romanian | 3 | 5 | kg | 120 s |
+| 1 | Barbell squat or hack squat, controlled depth | 3 to 4 | 6 to 8 | kg | 120 s |
 | 2 | Lat pulldown | 4 | 8 to 10 | kg* | 60 s |
-| 3 | Barbell bent-over row | 3 | 6 to 8 | kg | 90 s |
+| 3 | Seated cable row | 3 | 8 to 10 | kg* | 90 s |
 | 4 | Heavy dumbbell shrugs | 3 | 10 to 12 | lb | 60 s |
-| 5 | Machine ab crunch | 3 | 12 | kg* | 60 s |
+| 5 | Finisher: hammer curls, dumbbell or cable rope | 2 to 3 | 10 to 12 | lb or kg | 60 s |
+| 6 | Machine ab crunch | 2 to 3 | 12 to 15 | kg* | 60 s |
 
 Notes on the tables:
 
 - `kg*` means the exercise defaults to kilograms but the gym may mark that
   machine in pounds. You flip it once by tapping the unit label, and the app
   remembers.
-- Weighted planks were removed from Pull B at Franklin's request so that every
-  core exercise carries a weight that can progress. Machine ab crunch was the
-  alternative already named in the original program.
-- Two slots in the original program name alternatives: shrugs and curls
-  (barbell or dumbbell), and Pull A core (hanging knee raises or cable
-  woodchoppers). Each alternative is seeded as its own exercise with its own
-  history. The slot shows both and you pick which one you're doing today. The
-  app prefills from whichever you did last.
+- Slots that name two exercises seed each one as its own exercise with its
+  own history. You pick one on the workout screen, and the app prefills from
+  whichever you did last.
+- The cable side lateral raise is one exercise on both push days, so either
+  day prefills from the other.
+- Program version 1 exercises that version 2 dropped (deadlift, barbell
+  bent-over row, barbell overhead press, dumbbell shoulder press, barbell
+  curls, hanging knee raises) keep their records and logged sets. They no
+  longer show in Settings.
+- Phones on version 1 move to version 2 on the first launch with no workout
+  in progress. Exercise edits, history and the cycle position are kept.
 - Rest times in the tables are starting defaults. Every exercise's rest time
   is configurable. See [Rest timer](#rest-timer).
 
@@ -310,6 +322,7 @@ Phase 1 is complete when all of these are true on a real phone:
 | October 16, 2026 | Gym round 1: during a rest the active area shows the logged set, not the next steppers; logged sets can be edited or removed; reps are whole numbers; the workout hero uses short names. See `docs/superpowers/specs/2026-10-16-lifttracker-gym-round-1-design.md`. |
 | October 17, 2026 | Gym round 2: Home is a swipe pager over the four days; the workout lives under `#workout` so the back gesture returns Home, which shows a live Resume card and a Discard sheet; skipped, extra and chosen sets are stored on the workout. See `docs/superpowers/specs/2026-10-17-lifttracker-gym-round-2-design.md`. |
 | October 22, 2026 | During a rest the workout screen shows the logged set on one line and a next-up card: the next exercise in full, or the next set of the same exercise and which exercise follows. The hero stays on the exercise just done until the rest ends. Settings gains a test for starting a timer in the phone's Clock app. See `docs/superpowers/specs/2026-10-22-lifttracker-rest-next-up-design.md`. |
+| October 28, 2026 | Program version 2 replaces the original program: a knee-safe squat leads Pull B and the deadlift is dropped, each day gains a finisher (counted like other exercises), core moves to the end of each day, and set ranges such as 3 to 4 count the lower number. Phones migrate on launch, keeping history and edits. The exercise bank is deferred. |
 
 ## Open items
 

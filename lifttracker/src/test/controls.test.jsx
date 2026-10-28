@@ -69,8 +69,8 @@ describe('CycleBar', () => {
 describe('summaryOf', () => {
   it('shortens each slot to a word or two', () => {
     const byId = new Map(exercises.map((e) => [e.id, e]))
-    expect(summaryOf(programDays[0], byId)).toBe('bench press · chest press · shoulder press · dips · cable crunch')
-    expect(summaryOf(programDays[3], byId)).toBe('deadlift · lat pulldown · bent-over row · dumbbell shrugs · ab crunch')
+    expect(summaryOf(programDays[0], byId)).toBe('bench press · pec fly machine · shoulder press machine · dips · side lateral raise · woodchoppers')
+    expect(summaryOf(programDays[3], byId)).toBe('squat · lat pulldown · seated cable row · dumbbell shrugs · hammer curls · ab crunch')
   })
 })
 

@@ -19,6 +19,7 @@ vi.mock('../db/workouts.js', () => ({ discardWorkout: vi.fn().mockResolvedValue(
 vi.mock('../lib/restNotification.js', () => ({ closeRestNotifications: vi.fn(), getRegistration: vi.fn().mockResolvedValue(null) }))
 
 import Home from '../screens/Home.jsx'
+import DayPage from '../components/DayPage.jsx'
 import { discardWorkout } from '../db/workouts.js'
 
 const started = new Date(Date.now() - 14 * 60_000).toISOString()
@@ -102,6 +103,14 @@ describe('Home pager', () => {
     render(<Home active={activeWith([])} rest={null} flash={false} onStart={() => {}} onResume={() => {}} />)
     fireEvent.click(screen.getByRole('button', { name: 'Discard workout' }))
     expect(screen.getByText('Nothing was logged. Cycle position stays.')).toBeTruthy()
+  })
+
+  it('shrinks the strip figures when a day has six slots', () => {
+    const six = { ...homeView.days[1], stripSlugs: ['a', 'b', 'c', 'd', 'e', 'f'] }
+    const { container } = render(<DayPage entry={six} days={days} nextDayId="pull-a" upNext />)
+    const sizes = [...container.querySelectorAll('.ill')].map((el) => el.style.width)
+    expect(sizes).toHaveLength(6)
+    expect(new Set(sizes)).toEqual(new Set(['52px']))
   })
 
   it('flash rings the resume button', () => {

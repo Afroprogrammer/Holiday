@@ -8,6 +8,7 @@ import {
   formatElapsed,
   resolveChosen,
   restPreview,
+  setsText,
   skippedSets,
   lastTimeText,
   remainingSentence,
@@ -284,5 +285,14 @@ describe('restPreview', () => {
     expect(p.kind).toBe('other')
     expect(p.entry.exercise.id).toBe(bench.id)
     expect(p.setupText).toBe('60 kg')
+  })
+})
+
+describe('setsText', () => {
+  it('shows a range when the slot has one', () => {
+    expect(setsText({ targetSets: 3, setsMax: 4 })).toBe('3–4 sets')
+    expect(setsText({ targetSets: 4 })).toBe('4 sets')
+    expect(setsText({ targetSets: 1 })).toBe('1 set')
+    expect(setsText({ targetSets: 3, setsMax: 3 })).toBe('3 sets')
   })
 })

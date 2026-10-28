@@ -7,6 +7,7 @@ import ExerciseSettings from './screens/ExerciseSettings.jsx'
 import { getActiveView } from './db/queries.js'
 import { getSetting, SETTING_KEYS } from './db/settings.js'
 import { getActiveRest, startWorkout } from './db/workouts.js'
+import { migrateProgram } from './db/seed.js'
 import { enterWorkout, replaceHash, WORKOUT_HASH } from './lib/nav.js'
 import { notificationPermission } from './lib/restNotification.js'
 import { useAppUpdate } from './lib/update.js'
@@ -52,6 +53,12 @@ export default function App() {
   useEffect(() => {
     if (onWorkout && active === null) replaceHash('')
   }, [onWorkout, active])
+  // A program migration skipped at launch because a workout was running
+  // (for example after Update mid-workout) runs as soon as none is.
+  const idle = active === null
+  useEffect(() => {
+    if (idle) migrateProgram()
+  }, [idle])
 
   if (active === undefined) return null
 
