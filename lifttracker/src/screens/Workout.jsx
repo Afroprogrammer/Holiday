@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import BottomSheet from '../components/BottomSheet.jsx'
+import FinisherTag from '../components/FinisherTag.jsx'
 import Illustration from '../components/Illustration.jsx'
 import RestBlock from '../components/RestBlock.jsx'
 import RestDock, { DOCK_HEIGHT } from '../components/RestDock.jsx'
@@ -16,7 +17,7 @@ import { closeRestNotifications, getRegistration, notificationPermission, reques
 import { adjustRest, startRest } from '../lib/timer.js'
 import { convertWeight, incrementFor, otherUnit } from '../lib/units.js'
 import { useSetHandoff } from '../lib/useSetHandoff.js'
-import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, restPreview, shortName, skippedSets } from '../lib/workoutProgress.js'
+import { activePosition, buildPlan, formatElapsed, lastTimeText, remainingSentence, restPhase, restPreview, setsText, shortName, skippedSets } from '../lib/workoutProgress.js'
 
 // Picks which alternative a slot shows today: the one already logged in this
 // workout, else the one with the most recent history, else the first.
@@ -348,11 +349,13 @@ export default function Workout({ workoutId, flash = false }) {
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold uppercase tracking-wider text-act">
             Exercise {heroIndex + 1} of {plan.exercises.length}
+            {heroEntry.slot.finisher && <FinisherTag />}
           </p>
           <h2 className="mt-1 font-num text-[40px] font-bold uppercase leading-[0.95]">{shortName(heroEntry.exercise.name)}</h2>
           <p className="mt-1.5 text-[15px] text-ink-2">
-            {heroEntry.slot.targetSets} sets · {repsText(heroEntry.slot)} · rest {heroEntry.exercise.restSeconds} s{heroEntry.exercise.lowerIsBetter ? ' · assistance' : ''}
+            {setsText(heroEntry.slot)} · {repsText(heroEntry.slot)} · rest {heroEntry.exercise.restSeconds} s{heroEntry.exercise.lowerIsBetter ? ' · assistance' : ''}
           </p>
+          {heroEntry.slot.note && <p className="mt-0.5 text-[15px] text-ink-2">{heroEntry.slot.note}</p>}
           {!showCard && heroEntry.slot.options.length > 1 && (
             <div className="mt-2 flex overflow-hidden rounded-lg border border-rule bg-raised text-sm">
               {heroEntry.slot.options.map((option) => (
@@ -392,7 +395,10 @@ export default function Workout({ workoutId, flash = false }) {
               <li key={e.exercise.id} className="border-b border-rule last:border-0">
                 <button type="button" onClick={() => setFocus(e.exercise.id)} className="flex h-14 w-full items-center gap-3 text-left">
                   <Illustration slug={e.exercise.illustration} size={40} tone="ink-3" />
-                  <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{shortName(e.exercise.name)}</span>
+                  <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">
+                    {shortName(e.exercise.name)}
+                    {e.slot.finisher && <FinisherTag />}
+                  </span>
                   <span className="font-num text-sm text-ink-3">
                     {e.remaining} × {repsText(e.slot).replace(' reps', '')}
                   </span>

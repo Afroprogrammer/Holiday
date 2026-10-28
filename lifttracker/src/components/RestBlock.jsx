@@ -1,5 +1,6 @@
+import FinisherTag from './FinisherTag.jsx'
 import Illustration from './Illustration.jsx'
-import { shortName } from '../lib/workoutProgress.js'
+import { setsText, shortName } from '../lib/workoutProgress.js'
 
 function repsText(slot) {
   return slot.repMin === slot.repMax ? `${slot.repMin} reps` : `${slot.repMin}–${slot.repMax} reps`
@@ -61,8 +62,13 @@ export function NextUpCard({ preview, onStart, onChoose }) {
         <div className="flex items-center gap-3.5">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="font-num text-[30px] font-bold uppercase leading-none">{name}</p>
+            {entry.slot.finisher && (
+              <p>
+                <FinisherTag />
+              </p>
+            )}
             <p className="text-[15px] text-ink-2">
-              {entry.slot.targetSets} sets · {repsText(entry.slot)} · rest {entry.exercise.restSeconds} s
+              {setsText(entry.slot)} · {repsText(entry.slot)} · rest {entry.exercise.restSeconds} s
             </p>
           </div>
           <Illustration slug={entry.exercise.illustration} size={72} tone="act" live glow />

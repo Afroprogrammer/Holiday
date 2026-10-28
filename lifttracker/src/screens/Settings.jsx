@@ -60,8 +60,12 @@ function NotifySetting() {
 // Settings (prd.md, "Settings"): default rest, per-exercise overrides behind
 // each row, the cycle position, and attribution for the artwork and fonts.
 export default function Settings() {
-  const exercises = useLiveQuery(getExercisesByName, [], [])
+  const allExercises = useLiveQuery(getExercisesByName, [], [])
   const days = useLiveQuery(getProgramDays, [], [])
+  // Only exercises the program uses; dropped ones keep their history in
+  // the database and in backups (new program, October 2026).
+  const inProgram = new Set(days.flatMap((d) => d.slots.flatMap((s) => s.exerciseIds)))
+  const exercises = allExercises.filter((e) => inProgram.has(e.id))
   const nextDay = useLiveQuery(getNextProgramDay)
   const [picking, setPicking] = useState(false)
   const [resetting, setResetting] = useState(false)

@@ -63,3 +63,26 @@ describe('alternatives during a rest', () => {
     expect(src).toMatch(/onChoose=\{/)
   })
 })
+
+describe('new program display on the workout screen', () => {
+  const src = readFileSync(new URL('../screens/Workout.jsx', import.meta.url), 'utf8')
+  it('shows set ranges, the slot note and the finisher tag on the hero', () => {
+    expect(src).toMatch(/\{setsText\(heroEntry\.slot\)\} · \{repsText\(heroEntry\.slot\)\}/)
+    expect(src).toMatch(/heroEntry\.slot\.note &&/)
+    expect(src).toMatch(/heroEntry\.slot\.finisher && <FinisherTag/)
+  })
+  it('tags finishers in the Up next list', () => {
+    expect(src).toMatch(/e\.slot\.finisher && <FinisherTag/)
+  })
+})
+
+describe('exercise settings and the settings list', () => {
+  it('uses the set range on exercise settings', () => {
+    const src = readFileSync(new URL('../screens/ExerciseSettings.jsx', import.meta.url), 'utf8')
+    expect(src).toMatch(/setsText\(slot\)/)
+  })
+  it('lists only exercises the program uses', () => {
+    const src = readFileSync(new URL('../screens/Settings.jsx', import.meta.url), 'utf8')
+    expect(src).toMatch(/inProgram/)
+  })
+})

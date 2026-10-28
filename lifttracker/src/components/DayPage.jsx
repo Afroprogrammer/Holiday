@@ -22,7 +22,7 @@ export default function DayPage({ entry, days, nextDayId, upNext }) {
       <div className="-mx-1 mt-6 flex gap-1">
         {stripSlugs.map((slug, i) => (
           <span key={i} className="flex flex-1 justify-center">
-            <Illustration slug={slug} size={68} tone="ink-2" />
+            <Illustration slug={slug} size={stripSlugs.length > 5 ? 52 : 68} tone="ink-2" />
           </span>
         ))}
       </div>
